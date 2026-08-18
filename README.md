@@ -1,0 +1,44 @@
+# RAG Profile Selector — 인용이 어디를 가리키는지 측정한다
+
+검색 평가는 보통 "맞는 청크를 가져왔는가"에서 멈춘다. 독자가 실제로 묻는 것은 다르다: **이 인용은 문서의 어디를 가리키며, 그 위치가 맞는가.**
+
+```bash
+python3 -m pytest tests/ -q                    # 56 tests
+python3 experiments/citation_quality.py        # 프로파일 × 인용 품질 실험
+```
+
+## 왜 grounding 계층인가
+
+식별자 단위 precision/recall이 못 보는 실패가 셋 있다.
+
+| 실패 | 검색 지표에서 보이는 모습 | 독자가 겪는 일 |
+|---|---|---|
+| **ungrounded** | 평범한 오답 하나 | 아무 데도 닿지 않는 인용 |
+| **misplaced** | 정답 (precision 1.0) | 답은 맞는데 포인터가 틀림 |
+| **coarse** | 정답 | 구역이 있는데 페이지 단위로만 인용 |
+
+`tests/test_grounding.py::TestComplementarityWithRetrievalMetrics`가 이 논지를 직접 보인다 — 검색 점수가 **완전히 동일한** 두 실행이 인용 정확도에서는 1.0과 0.0으로 갈린다.
+
+## 실험 결과 (합성 코퍼스)
+
+| 프로파일 | recall | top-1 인용 정확 |
+|---|---|---|
+| bm25-k4 | 1.0 | 0.75 |
+| dense-k4 | 1.0 | 0.75 |
+| hybrid-rrf-k4 | 1.0 | **1.0** |
+| hybrid-rrf-k8 | 1.0 | **1.0** |
+
+네 프로파일의 검색 recall이 전부 같은데 인용 정확도는 갈린다. **recall만 보고 프로파일을 고르는 선택기는 이 축에서 눈을 감고 고르는 셈**이다. hybrid 융합은 단일 검색기보다 인용도 나쁘지 않았다.
+
+측정 함정 하나를 기록해둔다: 반환된 인용 전체를 평균하면 grounding 실패가 분모에서 빠져 **점수를 오히려 올린다**. 그래서 top-1 지표를 병기하고 리포트에도 캐비앳을 출력한다.
+
+코퍼스는 합성이며 그렇게 명시한다. 이 숫자는 실제 문서에 대한 주장이 아니라 **측정 방식에 대한 주장**이다.
+
+## 문서 모델과의 관계
+
+`document-intelligence`는 별도 저장소로 두고 import 경계로만 의존한다(`docs/ADR-001-citation-grounding.md`에 근거). 좌표 검증은 여전히 그쪽 책임이고, `to_evidence_citation()`이 결과를 그 모델의 어휘로 되돌려준다. 문서 모델이 없으면 grounding 테스트만 skip된다.
+
+## 남은 작업
+
+- 한국어 공문서 실코퍼스 (데이터 확보 방식 미정)
+- 부산물로서의 벤치마크 공개 판단
