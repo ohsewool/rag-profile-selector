@@ -1,4 +1,4 @@
-"""Deterministic configuration for the approved retrieval profiles."""
+"""Retrieval profiles, fusion, evidence metrics, and citation grounding."""
 
 from .profiles import (
     APPROVED_PROFILES,
