@@ -77,3 +77,7 @@ python3 experiments/citation_quality.py        # 프로파일 × 인용 품질 �
 
 - 한국어 공문서 실코퍼스 (데이터 확보 방식 미정 — 위 관문은 준비 완료)
 - 부산물로서의 벤치마크 공개 판단
+
+## 라이선스
+
+Apache License 2.0. [`LICENSE`](LICENSE) 참조.
