@@ -8,6 +8,13 @@ from .corpus import (
     SplitAssignment,
     validate_evidence_mapping,
 )
+from .probes import (
+    APPROVED_FEATURES,
+    ProbeError,
+    ProbeResult,
+    assert_no_leakage,
+    extract,
+)
 from .profiles import (
     APPROVED_PROFILES,
     ProfileValidationError,
@@ -18,6 +25,11 @@ from .profiles import (
 )
 
 __all__ = [
+    "APPROVED_FEATURES",
+    "ProbeError",
+    "ProbeResult",
+    "assert_no_leakage",
+    "extract",
     "Corpus",
     "CorpusError",
     "CorpusManifest",

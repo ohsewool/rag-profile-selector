@@ -3,7 +3,7 @@
 검색 평가는 보통 "맞는 청크를 가져왔는가"에서 멈춘다. 독자가 실제로 묻는 것은 다르다: **이 인용은 문서의 어디를 가리키며, 그 위치가 맞는가.**
 
 ```bash
-python3 -m pytest tests/ -q                    # 89 tests
+python3 -m pytest tests/ -q                    # 125 tests
 python3 experiments/citation_quality.py        # 프로파일 × 인용 품질 실험
 ```
 
@@ -37,6 +37,14 @@ python3 experiments/citation_quality.py        # 프로파일 × 인용 품질 �
 ## 문서 모델과의 관계
 
 `document-intelligence`는 별도 저장소로 두고 import 경계로만 의존한다(`docs/ADR-001-citation-grounding.md`에 근거). 좌표 검증은 여전히 그쪽 책임이고, `to_evidence_citation()`이 결과를 그 모델의 어휘로 되돌려준다. 문서 모델이 없으면 grounding 테스트만 skip된다.
+
+## 선택기가 볼 수 있는 것
+
+프로파일을 고르는 일은 검색이 실행되기 **전에** 알 수 있는 것만 보고 해야 한다 — 질의 자체, 그리고 각 검색기를 싸게 찔러본 결과. 정답 라벨이나 선택된 프로파일의 성적은 볼 수 없다. 그건 답이고, 답으로 만든 특징은 평가에서만 동작하는 선택기를 만든다.
+
+이 규칙은 문서가 아니라 구조로 강제한다. `extract(query, probes, k)` 외에 라벨이 들어올 매개변수가 없고, `assert_no_leakage()`가 답에서 파생된 이름(gold·label·answer·quality·regret·outcome)을 거부한다.
+
+측정 주의사항 하나도 코드에 반영했다: BM25 점수와 코사인 유사도는 **단위가 다르다**. 그래서 검색기 간 특징은 전부 순위 기반이고, 점수는 같은 검색기 안에서 비율로만 쓴다(40 대 20과 0.4 대 0.2가 같은 상황을 뜻하도록).
 
 ## 데이터가 도착하기 전에 세워둔 관문
 
