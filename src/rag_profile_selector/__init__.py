@@ -8,6 +8,16 @@ from .corpus import (
     SplitAssignment,
     validate_evidence_mapping,
 )
+from .selector import (
+    Evaluation,
+    FixedSelector,
+    OracleSelector,
+    QueryOutcome,
+    RuleSelector,
+    SelectorError,
+    evaluate,
+    headroom,
+)
 from .probes import (
     APPROVED_FEATURES,
     ProbeError,
@@ -25,6 +35,14 @@ from .profiles import (
 )
 
 __all__ = [
+    "Evaluation",
+    "FixedSelector",
+    "OracleSelector",
+    "QueryOutcome",
+    "RuleSelector",
+    "SelectorError",
+    "evaluate",
+    "headroom",
     "APPROVED_FEATURES",
     "ProbeError",
     "ProbeResult",
