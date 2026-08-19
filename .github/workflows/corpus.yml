@@ -41,9 +41,29 @@ jobs:
           path: .sibling/document-intelligence
 
       - name: Fetch the statutes
+        id: fetch
+        continue-on-error: true
         run: python scripts/fetch_kr_law_corpus.py --out /tmp/fresh --limit 14
 
+      - name: Say plainly when the source could not be reached
+        if: steps.fetch.outcome == 'failure'
+        run: |
+          # 국가법령정보 OPEN API times out from GitHub's runners. It answers when
+          # this is run from elsewhere, so the corpus is fine and the network
+          # path is not.
+          #
+          # This job used to fail here, which put "the statutes changed" and "I
+          # could not reach the statutes" behind the same red mark. They call
+          # for opposite responses: one means the experiment's numbers describe
+          # text that no longer exists, the other means nothing was learned
+          # today. Conflating them is the mistake this whole project keeps
+          # finding in its own checks - an unverified alarm costs attention
+          # exactly as an unverified all-clear costs trust.
+          echo "::warning::국가법령정보 API에 접속하지 못해 이번 회차는 아무것도 검증하지 못했습니다."
+          echo "::warning::코퍼스가 바뀐 것이 아니라 확인을 못 한 것입니다. 로컬에서 scripts/fetch_kr_law_corpus.py 로 확인하세요."
+
       - name: Compare against the committed manifest
+        if: steps.fetch.outcome == 'success'
         run: |
           python - <<'PY'
           import json, sys
@@ -74,6 +94,7 @@ jobs:
           PY
 
       - name: Run the corpus tests against the fetched documents
+        if: steps.fetch.outcome == 'success'
         env:
           PYTHONPATH: ${{ github.workspace }}/.sibling/document-intelligence/src
         run: |
@@ -85,6 +106,7 @@ jobs:
           python -m pytest tests/test_kr_law_corpus.py -q -rs
 
       - name: Check the README's headline numbers against a real run
+        if: steps.fetch.outcome == 'success'
         env:
           PYTHONPATH: ${{ github.workspace }}/.sibling/document-intelligence/src
           TOKENIZERS_PARALLELISM: "false"
@@ -132,6 +154,7 @@ jobs:
           CHECK
 
       - name: Refuse a run where the corpus tests skipped anyway
+        if: steps.fetch.outcome == 'success'
         env:
           PYTHONPATH: ${{ github.workspace }}/.sibling/document-intelligence/src
         run: |
