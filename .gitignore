@@ -6,3 +6,4 @@ __pycache__/
 # a re-fetch can be checked byte for byte; the documents themselves do not.
 data/*/documents/
 data/*/index.json
+.embeddings/
