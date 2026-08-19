@@ -1,5 +1,7 @@
 # RAG Profile Selector — 인용이 어디를 가리키는지 측정한다
 
+[![tests](https://github.com/ohsewool/rag-profile-selector/actions/workflows/tests.yml/badge.svg)](https://github.com/ohsewool/rag-profile-selector/actions/workflows/tests.yml)
+
 검색 평가는 보통 "맞는 청크를 가져왔는가"에서 멈춘다. 독자가 실제로 묻는 것은 다르다: **이 인용은 문서의 어디를 가리키며, 그 위치가 맞는가.**
 
 ```bash
