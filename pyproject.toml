@@ -27,3 +27,6 @@ where = ["src"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+markers = [
+    "slow: spawns a subprocess or embeds the corpus; seconds rather than milliseconds",
+]

@@ -6,7 +6,7 @@
 
 ```bash
 pip install -e .                                   # src/ 레이아웃이라 설치 없이는 import되지 않는다
-python3 -m pytest tests/ -q                        # 177 tests
+python3 -m pytest tests/ -q                        # 180 tests
 python3 scripts/fetch_kr_law_corpus.py             # 한국어 법령 코퍼스 (공공누리 제1유형)
 python3 experiments/kr_law_retrieval.py            # 프로파일 비교 + headroom
 python3 experiments/kr_law_selection.py            # 선택기가 그 headroom에 닿는가
