@@ -98,7 +98,7 @@ class BM25:
             for term in set(terms):
                 self.postings[term].append(key)
 
-    def search(self, query_terms: list[str], limit: int) -> list[str]:
+    def search_scored(self, query_terms: list[str], limit: int) -> list[tuple[str, float]]:
         scores: dict[str, float] = defaultdict(float)
         for term in query_terms:
             idf = self.idf.get(term)
@@ -109,7 +109,10 @@ class BM25:
                 norm = 1 - self.b + self.b * self.lengths[key] / self.average_length
                 scores[key] += idf * frequency * (self.k1 + 1) / (frequency + self.k1 * norm)
         ranked = sorted(scores.items(), key=lambda item: (-item[1], item[0]))
-        return [key for key, _ in ranked[:limit]]
+        return ranked[:limit]
+
+    def search(self, query_terms: list[str], limit: int) -> list[str]:
+        return [key for key, _ in self.search_scored(query_terms, limit)]
 
 
 def reciprocal_rank_fusion(rankings: list[list[str]], limit: int, k: int = 60) -> list[str]:
@@ -157,7 +160,7 @@ class DenseRetriever:
             .encode("utf-8")).hexdigest()[:16]
         cache_file = (cache or CORPUS / ".embeddings") / f"{signature}.pt"
         if cache_file.exists():
-            self.matrix = torch.load(cache_file)
+            self.matrix = torch.load(cache_file, weights_only=True)
             print(f"  임베딩 캐시 사용: {cache_file.name}")
             return
 
@@ -186,13 +189,16 @@ class DenseRetriever:
                     print(f"    {min(start + batch_size, len(texts))}/{len(texts)}", flush=True)
         return torch.cat(chunks)
 
-    def search(self, query: str, limit: int) -> list[str]:
+    def search_scored(self, query: str, limit: int) -> list[tuple[str, float]]:
         # e5 requires the asymmetric prefixes; without them query and passage
         # vectors sit in different regions and the ranking degrades quietly.
         vector = self._encode([f"query: {query}"], 1)
         scores = (self.matrix @ vector.T).squeeze(1)
         order = scores.argsort(descending=True)[:limit].tolist()
-        return [self.ids[index] for index in order]
+        return [(self.ids[index], float(scores[index])) for index in order]
+
+    def search(self, query: str, limit: int) -> list[str]:
+        return [key for key, _ in self.search_scored(query, limit)]
 
 
 def load_articles() -> dict[str, str]:
