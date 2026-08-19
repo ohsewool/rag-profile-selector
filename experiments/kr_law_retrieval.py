@@ -320,15 +320,27 @@ def main() -> int:
                         if (o.quality[first] == 0) != (o.quality[second] == 0))
             print(f"  {first:>11} / {second:<11} 동시실패 {both:>2}  갈림 {split:>2}")
 
-    if space["headroom"] < 0.02:
-        print("\n  → headroom이 사실상 0이다. 어떤 선택기도 최선 고정 프로파일을 "
-              "의미 있게 이길 수 없으므로, 만들 이유가 없다.")
-    else:
-        oracle_wins = sum(
-            1 for outcome in outcomes
-            if outcome.regret_of(space["best_fixed_profile"]) > 0)
-        print(f"\n  → 오라클이 최선 고정보다 나은 질의: {oracle_wins}/{len(outcomes)}건. "
-              "선택이 얻을 수 있는 최대치가 여기까지다.")
+    # No cutoff here on purpose. This used to print "headroom is effectively
+    # zero, do not build a selector" below 0.02 - a number with nothing behind
+    # it. Whether 0.03 is worth building for depends on what a selector costs to
+    # run and maintain against what the regret is worth, and neither of those is
+    # knowable from inside this script. Inventing a boundary would have dressed
+    # that judgement up as a measurement.
+    #
+    # What is measurable is reported instead: how many queries selection could
+    # possibly affect, and how much is available on each. A reader with the
+    # missing half of the problem can then decide.
+    winners = [outcome for outcome in outcomes
+               if outcome.regret_of(space["best_fixed_profile"]) > 0]
+    print(f"\n  선택이 영향을 줄 수 있는 질의: {len(winners)}/{len(outcomes)}건")
+    if winners:
+        gains = sorted((outcome.regret_of(space["best_fixed_profile"])
+                        for outcome in winners), reverse=True)
+        print(f"  그 질의들에서 얻을 수 있는 값: "
+              f"{', '.join(f'{gain:.2f}' for gain in gains)}")
+        print(f"  나머지 {len(outcomes) - len(winners)}건에서는 무엇을 고르든 결과가 같다.")
+    print("  선택기를 만들 값어치가 있는지는 그 이득과 선택기의 비용을 견주는 "
+          "문제이고, 비용은 이 실험이 알 수 없다.")
     return 0
 
 

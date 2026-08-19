@@ -116,12 +116,27 @@ def main() -> int:
     else:
         print("  → 라벨이 실제 중복 순서와 어긋난다. 라벨을 고치거나 질의를 다시 써야 한다")
 
-    giveaways = [row for row in rows if row[4] > 0.30]
-    print(f"\ngold가 차점 조문을 0.30 넘게 앞서는 질의: {len(giveaways)}개")
-    for query_id, label, gold, rival, margin in sorted(giveaways, key=lambda r: -r[4])[:5]:
-        print(f"  {query_id} ({label}) gold {gold:.2f} vs 차점 {rival:.2f}  차이 {margin:+.2f}")
-    if giveaways:
-        print("  이 질의들은 어휘 일치만으로 풀린다. 프로파일을 구분하지 못한다.")
+    # This used to flag queries whose gold beat the runner-up by more than 0.30
+    # and report the count. The count was always zero, because the largest
+    # margin this set produces is 0.200 - the check could not fire, and its "0"
+    # read as a clean result rather than as a threshold placed out of reach.
+    #
+    # There is no honest replacement constant. What the retrieval experiment
+    # actually shows, on 28 queries: every profile finds the gold article for
+    # all three queries with a margin above 0.1, and for none of the fifteen
+    # with a margin at or below zero. Three queries is not a boundary, so the
+    # distribution is printed and the reader draws the line.
+    print("\ngold가 차점 조문을 앞서는 정도(margin) 분포")
+    bands = ((-1.0, 0.0), (0.0, 0.1), (0.1, 0.2), (0.2, 0.3), (0.3, 1.0))
+    for low, high in bands:
+        in_band = [row for row in rows if low <= row[4] < high]
+        if in_band:
+            names = ", ".join(row[0] for row in sorted(in_band, key=lambda r: -r[4])[:4])
+            print(f"  {low:+.1f} ~ {high:+.1f}  {len(in_band):>2}개   {names}")
+    top = max(rows, key=lambda row: row[4])
+    print(f"  최대 {top[4]:+.2f} ({top[0]})")
+    print("  margin이 클수록 어휘 일치만으로 풀리고 프로파일을 구분하지 못한다. "
+          "이 집합에서 margin > 0.1인 질의는 모든 프로파일이 찾아냈다(3건).")
 
     unanswered = [row for row in rows if row[2] == 0.0]
     if unanswered:
