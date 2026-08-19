@@ -219,3 +219,52 @@ class TestSealedSplit:
         if not (CORPUS / "splits.json").exists():
             pytest.skip("no splits")
         assert Corpus.open(CORPUS).provenance()["split_seed"]
+
+
+class TestRetrievalExperiment:
+    """The retrieval components, checked without needing the whole corpus."""
+
+    @pytest.fixture(scope="class")
+    def retrieval(self):
+        sys.path.insert(0, str(ROOT / "experiments"))
+        import kr_law_retrieval
+        return kr_law_retrieval
+
+    def test_char_ngrams_survive_korean_particles(self, retrieval):
+        """개인정보를 and 개인정보는 are different words and near-identical n-grams.
+
+        This is the whole reason bm25-char is in the comparison.
+        """
+        first, second = "개인정보를 수집한다", "개인정보는 수집된다"
+
+        # The claim is qualitative: n-grams meet where word tokens cannot. A
+        # numeric floor here would be a threshold invented to pass - the first
+        # version asserted three and the true overlap is two (개인정, 인정보).
+        assert set(retrieval.word_tokens(first)) & set(retrieval.word_tokens(second)) == set()
+        assert set(retrieval.char_ngrams(first)) & set(retrieval.char_ngrams(second))
+
+    def test_char_ngrams_ignore_inconsistent_spacing(self, retrieval):
+        assert set(retrieval.char_ngrams("한 번")) == set(retrieval.char_ngrams("한번"))
+
+    def test_bm25_ranks_the_matching_document_first(self, retrieval):
+        engine = retrieval.BM25({
+            "a": retrieval.word_tokens("개인정보 파기 의무"),
+            "b": retrieval.word_tokens("전자금융 거래 지시 철회"),
+            "c": retrieval.word_tokens("소비자 분쟁 해결 절차"),
+        })
+        assert engine.search(retrieval.word_tokens("전자금융 철회"), 2)[0] == "b"
+
+    def test_an_unmatched_query_returns_nothing_rather_than_anything(self, retrieval):
+        """Returning an arbitrary document for a query with no matching term
+        would turn a miss into a wrong citation."""
+        engine = retrieval.BM25({"a": retrieval.word_tokens("개인정보 파기")})
+        assert engine.search(retrieval.word_tokens("zzzz"), 4) == []
+
+    def test_reciprocal_rank_rewards_position(self, retrieval):
+        assert retrieval.reciprocal_rank(["x", "gold"], ["gold"]) == 0.5
+        assert retrieval.reciprocal_rank(["gold"], ["gold"]) == 1.0
+        assert retrieval.reciprocal_rank(["x", "y"], ["gold"]) == 0.0
+
+    def test_fusion_promotes_what_both_rankings_agree_on(self, retrieval):
+        fused = retrieval.reciprocal_rank_fusion([["a", "b"], ["b", "c"]], 3)
+        assert fused[0] == "b"
