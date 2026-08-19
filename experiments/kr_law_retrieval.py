@@ -225,18 +225,26 @@ def reciprocal_rank(ranking: list[str], gold: list[str]) -> float:
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--test", action="store_true",
+                        help="평가를 봉인된 test split으로 바꾼다 (동결 이후에만)")
     parser.add_argument("--k", type=int, default=4, help="results per query")
     parser.add_argument("--no-dense", action="store_true",
                         help="skip the embedding profile (no model download)")
     args = parser.parse_args()
 
     corpus = Corpus.open(CORPUS)
+    if args.test:
+        # One-way, and only after experiments/PROTOCOL_FROZEN.md was written.
+        # Reading this split while the design could still change would turn it
+        # into a second validation set.
+        corpus = corpus.freeze_protocol()
     articles = load_articles()
     queries = {
         item["id"]: item
         for item in json.loads((CORPUS / "queries.json").read_text(encoding="utf-8"))["queries"]
     }
-    evaluated = list(corpus.queries("train")) + list(corpus.queries("validation"))
+    evaluated = (list(corpus.queries("test")) if getattr(args, "test", False)
+                 else list(corpus.queries("train")) + list(corpus.queries("validation")))
     print(f"조문 {len(articles)}개 / 평가 질의 {len(evaluated)}개 (test split은 봉인 상태)\n")
 
     engines = {

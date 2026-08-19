@@ -22,6 +22,8 @@ python3 experiments/kr_law_selection.py            # 선택기가 그 headroom�
 
 오라클이 이기는 5건은 전부 `hybrid-rrf`가 정답인데 이긴 규칙은 `bm25-char`를 고른다. 겨냥해서 이긴 게 아니라 다른 데서 우연히 앞섰다. 그 5건의 probe 특징은 `top1_margin` 0.04~0.54, `overlap` 0.00~0.60으로 흩어져 나머지 23건과 구분되지 않는다.
 
+**봉인했던 test split(12건)에서도 결론은 유지됐다.** 규칙 넷 중 어느 것도 기준선을 이기지 못했고, train에서 이겼던 규칙은 test에서 기준선과 **정확히 같은 값**을 냈다 — 12건 전부에서 같은 선택을 했다는 뜻이고, 그 승리가 잡음이었다는 직접적 증거다. 다만 절대 수치는 절반 이하로 떨어졌으며 그 원인(층화를 라벨로 했고 실제 난이도는 어휘 중복이 지배했다)은 [`KR_LAW_RESULTS.md`](experiments/KR_LAW_RESULTS.md)에 적었다.
+
 **headroom은 존재하지만 관측 가능한 신호로 닿지 않는다.** 이건 실패가 아니라 답이다 — `headroom()`을 만들기 전에 부르는 이유가 이것이고, "닿지 않는다"가 나왔을 때 튜닝을 시작하지 않는 것이 그 함수의 용도다. 전체 경위는 [`experiments/KR_LAW_RESULTS.md`](experiments/KR_LAW_RESULTS.md).
 
 ## 왜 grounding 계층인가

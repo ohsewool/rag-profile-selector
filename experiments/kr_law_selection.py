@@ -48,12 +48,15 @@ PROFILES = ["bm25-word", "bm25-char", "hybrid-rrf", "dense", "hybrid-all"]
 
 def build(args):
     corpus = Corpus.open(CORPUS)
+    if getattr(args, "test", False):
+        corpus = corpus.freeze_protocol()
     articles = load_articles()
     queries = {
         item["id"]: item
         for item in json.loads((CORPUS / "queries.json").read_text(encoding="utf-8"))["queries"]
     }
-    evaluated = list(corpus.queries("train")) + list(corpus.queries("validation"))
+    evaluated = (list(corpus.queries("test")) if getattr(args, "test", False)
+                 else list(corpus.queries("train")) + list(corpus.queries("validation")))
 
     word = BM25({key: word_tokens(text) for key, text in articles.items()})
     char = BM25({key: char_ngrams(text) for key, text in articles.items()})
@@ -125,6 +128,8 @@ RULES = {
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--test", action="store_true",
+                        help="평가를 봉인된 test split으로 바꾼다 (동결 이후에만)")
     parser.add_argument("--k", type=int, default=4)
     args = parser.parse_args()
 
