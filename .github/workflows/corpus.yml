@@ -88,10 +88,17 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/.sibling/document-intelligence/src
         run: |
-          skipped=$(python -m pytest tests/test_kr_law_corpus.py -q 2>/dev/null \
-            | grep -oE '[0-9]+ skipped' | grep -oE '^[0-9]+')
-          echo "skipped ${skipped:-0}"
+          # `grep` exits 1 when it matches nothing, and the step runs under
+          # `bash -e`. The first version of this guard therefore aborted in the
+          # one case it was meant to accept: a run with no skips at all. It
+          # reported failure over a clean result - which is worse than the
+          # silence it was written to break, because it teaches people to
+          # ignore the job.
+          summary=$(python -m pytest tests/test_kr_law_corpus.py -q 2>/dev/null | tail -1)
+          echo "$summary"
+          skipped=$(printf '%s' "$summary" | grep -oE '[0-9]+ skipped' | grep -oE '^[0-9]+' || true)
           if [ "${skipped:-0}" -gt 0 ]; then
-            echo "::error::corpus tests still skipped after fetching; this job verified nothing."
+            echo "::error::$skipped corpus test(s) skipped after fetching; this job verified nothing."
             exit 1
           fi
+          echo "no corpus test skipped; the fetched documents were actually checked"
