@@ -1,0 +1,29 @@
+# Packaging exists so the commands this project's README prints actually work.
+#
+# The layout is src/, so a fresh clone cannot `import rag_profile_selector` and cannot run
+# `python -m rag_profile_selector.…` - the tests only worked because each one inserts src/
+# onto sys.path itself. Someone following the README hit a ModuleNotFoundError
+# on the first documented command.
+#
+#     pip install -e .
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "rag-profile-selector"
+version = "0.1.0"
+description = "질의별 검색 프로파일 선택의 근거를 측정한다"
+requires-python = ">=3.11"
+license = { text = "Apache-2.0" }
+dependencies = []
+
+[project.urls]
+Source = "https://github.com/ohsewool/rag-profile-selector"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

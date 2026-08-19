@@ -2,6 +2,8 @@
 pytest>=8
 
 # The grounding layer needs the sibling repository. Without it 26 tests skip:
+#   pip install -e ../document-intelligence
+# or, without installing:
 #   PYTHONPATH=../document-intelligence/src
 #
 # The Korean-corpus experiments need more, and are not part of the test suite:

@@ -5,6 +5,7 @@
 검색 평가는 보통 "맞는 청크를 가져왔는가"에서 멈춘다. 독자가 실제로 묻는 것은 다르다: **이 인용은 문서의 어디를 가리키며, 그 위치가 맞는가.**
 
 ```bash
+pip install -e .                                   # src/ 레이아웃이라 설치 없이는 import되지 않는다
 python3 -m pytest tests/ -q                        # 177 tests
 python3 scripts/fetch_kr_law_corpus.py             # 한국어 법령 코퍼스 (공공누리 제1유형)
 python3 experiments/kr_law_retrieval.py            # 프로파일 비교 + headroom
