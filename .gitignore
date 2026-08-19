@@ -1,3 +1,8 @@
 __pycache__/
 *.pyc
 .pytest_cache/
+
+# Fetched corpora are not redistributed. manifest.json travels with the repo so
+# a re-fetch can be checked byte for byte; the documents themselves do not.
+data/*/documents/
+data/*/index.json

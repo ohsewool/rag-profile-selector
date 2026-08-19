@@ -1,0 +1,26 @@
+{
+  "corpus_id": "kr_law",
+  "version": "20260819",
+  "source_url": "https://www.law.go.kr/DRF/lawSearch.do",
+  "licence": "공공누리 제1유형 (출처표시) — 법제처 국가법령정보센터",
+  "retrieved_at": "2026-08-19T02:11:46+00:00",
+  "evidence_unit": "article",
+  "checksums": {
+    "documents/117412_개인정보_단체소송규칙.json": "fd86915fd2d0ed390b4fe7a1c9bb90d9c7dd5daa35d696c39788d7463c5f9540",
+    "documents/270351_개인정보_보호법.json": "6c9935dd6f3edacd677e2c33844ef775429fc247d70740b865bdc4d52f1c774d",
+    "documents/286175_개인정보_보호법_시행령.json": "0ff91ba994d7143efb8617984da865daec0e8915b925b348b20556f36cc2b94f",
+    "documents/251025_데이터기반행정_활성화에_관한_법률.json": "7d781fae9b737bfc49c9ed2c2c4ecb804a7395863f20adc44aa4c4ccd9182c6d",
+    "documents/255951_데이터기반행정_활성화에_관한_법률_시행령.json": "e4f42588a8d42e9efc79d0c50453091681c4f128e0a5f465ad1966b1d254e8aa",
+    "documents/281883_산업_디지털_전환_및_인공지능_활용_촉진법.json": "e6ecf31c1869886c2ff675ddc7313011e2cb40596130b2ca28b5093bae4925ae",
+    "documents/280277_전자금융거래법.json": "ef94c789ecd3387fc27089dd8d42b7b0359ca97cdec7bb2f1fc6de6f456a4680",
+    "documents/285727_전자금융거래법_시행령.json": "a2a885536b1039158ddb66657438080c30263c4ac037c6066641949b72ff6f84",
+    "documents/265425_과학기술정보통신부_및_우주항공청_소관_비영리법인의_설립_및_감독에_관한_규칙.json": "29619fdcce488f55d0b7a99943c661120271c697ede81c7d593cd7d73f78fbea",
+    "documents/288165_과학기술정보통신부_소관_비상대비에_관한_법률_시행규칙.json": "660b4852486ef944f5a3e8c452135cbc1af451a464faa62fdc2c01f4ab2aa624",
+    "documents/288211_과학기술정보통신부와_그_소속기관_직제.json": "4d51153b5284f275a021e4f6f672a1606f67d78c7b1b01a65c2a85f8f9560c95",
+    "documents/277247_금융소비자_보호에_관한_법률.json": "cd74e5e6b9f26370590bf8b9e6bb1795fc7c34b94f3a5cb1b9ee6734ecf22930",
+    "documents/285715_금융소비자_보호에_관한_법률_시행령.json": "f17b5b5036d6615bd9b530298490ef51af3d9e350a9d0865e2fb362eef134367",
+    "documents/277233_소비자기본법.json": "c963821dbc5b66ba7fbe449d23f84f2ce273183600ed17b61a0a2561359f983c",
+    "index.json": "86cf2723b89a016bc15c5c5b0ed591ec937bf8239909c5e7005bfe563e04c14c"
+  },
+  "notes": "14 statutes across 7 topics via 국가법령정보 OPEN API. Documents are not redistributed with this repository; re-run this script and the checksums must match for results to be comparable."
+}
