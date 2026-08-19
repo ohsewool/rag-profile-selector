@@ -104,3 +104,12 @@ python3 experiments/kr_law_selection.py            # 선택기가 그 headroom�
 ## 라이선스
 
 Apache License 2.0. [`LICENSE`](LICENSE) 참조.
+
+## 함께 보기
+
+이 저장소는 다섯 개 중 하나다. 전체 지도와 각각이 무엇을 발견했는지는 [프로필](https://github.com/ohsewool)에 있다.
+
+- [`agent-safety-core`](https://github.com/ohsewool/agent-safety-core) — 승인과 실행의 결속 · 1회용 lease · UNKNOWN_OUTCOME
+- [`modelmate`](https://github.com/ohsewool/modelmate) — 증거가 없으면 확신하지 않는 모델링 도우미
+- [`mcp-gateway`](https://github.com/ohsewool/mcp-gateway) — MCP 서버 앞의 보안 프록시
+- [`document-intelligence`](https://github.com/ohsewool/document-intelligence) — 파서에 의존하지 않는 문서 증거 모델
