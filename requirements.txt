@@ -1,0 +1,8 @@
+# Tests
+pytest>=8
+
+# The grounding layer needs the sibling repository. Without it 26 tests skip:
+#   PYTHONPATH=../document-intelligence/src
+#
+# The Korean-corpus experiments need more, and are not part of the test suite:
+#   pip install torch transformers      # dense profile (experiments/)
