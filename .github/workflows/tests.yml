@@ -36,9 +36,10 @@ jobs:
           repository: ohsewool/document-intelligence
           path: .sibling/document-intelligence
 
+      - name: Install the sibling
+        run: pip install -e .sibling/document-intelligence
+
       - name: Refuse a silently shrinking suite
-        env:
-          PYTHONPATH: ${{ github.workspace }}/.sibling/document-intelligence/src
         run: |
           collected=$(python -m pytest --collect-only -q 2>/dev/null \
             | grep -oE '[0-9]+ tests? collected' | grep -oE '^[0-9]+')
@@ -50,6 +51,4 @@ jobs:
           fi
 
       - name: Run the suite
-        env:
-          PYTHONPATH: ${{ github.workspace }}/.sibling/document-intelligence/src
         run: python -m pytest -q -rs   # -rs names every skip and why
