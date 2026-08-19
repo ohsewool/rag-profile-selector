@@ -121,9 +121,23 @@ def articles(mst: str) -> list[dict]:
         text = re.sub(r"\n\s*\n+", "\n", text).strip()
         if not text:
             continue
+        # 조문가지번호 is what separates 제7조 from 제7조의2. Dropping it - as a
+        # first version did - collapsed fourteen distinct provisions of the
+        # 개인정보 보호법 onto the single identifier "7", which defeats the
+        # entire reason for choosing statutes: an article citation is only
+        # checkable if it names exactly one article.
+        number = str(unit.get("조문번호") or "").strip()
+        branch = str(unit.get("조문가지번호") or "").strip()
         collected.append({
-            "article_no": str(unit.get("조문번호") or "").strip(),
+            "article_id": f"{number}-{branch}" if branch else number,
+            "article_no": number,
+            "branch_no": branch or None,
+            "label": f"제{number}조의{branch}" if branch else f"제{number}조",
             "is_article": str(unit.get("조문여부") or "") == "조문",
+            # Repealed provisions keep their number and hold no rule. They stay
+            # in the document so the numbering is not silently reshuffled, and
+            # are excluded from retrieval targets.
+            "is_repealed": bool(re.match(r"^제\d+조(의\d+)?\s*삭제", text)),
             "text": text,
         })
     return collected

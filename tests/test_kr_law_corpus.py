@@ -128,3 +128,94 @@ class TestTheFetchedDocuments:
             body = "".join(a["text"] for a in payload["articles"])
             assert len(body) > 500, f"{name} holds {len(body)} characters"
             assert "<html" not in body.lower()
+
+
+class TestQuerySet:
+    """The queries, and the property that makes them worth running."""
+
+    @pytest.fixture(scope="class")
+    def queries(self):
+        path = CORPUS / "queries.json"
+        if not path.exists():
+            pytest.skip("no query set")
+        return json.loads(path.read_text(encoding="utf-8"))["queries"]
+
+    def test_every_query_names_its_evidence(self, queries):
+        assert queries
+        assert all(item["evidence"] for item in queries)
+
+    def test_evidence_ids_are_statute_and_article(self, queries):
+        """`270351:7-4` is 제7조의4 of one statute - one article, not a document."""
+        for item in queries:
+            for gold in item["evidence"]:
+                statute, _, article = gold.partition(":")
+                assert statute.isdigit() and article
+
+    def test_query_ids_are_unique(self, queries):
+        ids = [item["id"] for item in queries]
+        assert len(ids) == len(set(ids))
+
+    def test_the_gold_articles_exist(self, queries, manifest, documents_present):
+        from rag_profile_selector.corpus import validate_evidence_mapping
+        known = set()
+        for name in manifest.checksums:
+            if not name.startswith("documents/"):
+                continue
+            payload = json.loads((CORPUS / name).read_text(encoding="utf-8"))
+            for article in payload["articles"]:
+                if article["is_article"] and not article["is_repealed"]:
+                    known.add(f"{payload['mst']}:{article['article_id']}")
+        report = validate_evidence_mapping(
+            {item["id"]: item["evidence"] for item in queries}, known)
+        assert report.ok, report.summary()
+
+    def test_hard_queries_exist(self, queries):
+        """A set of only term-matching queries reports that profile choice does
+        not matter, which is a fact about the queries rather than retrieval."""
+        situational = [q for q in queries if q["difficulty"] == "situational"]
+        assert len(situational) >= len(queries) // 5
+
+
+class TestArticleIdentityIsUnique:
+    """제7조 and 제7조의2 are different provisions and must not share an id."""
+
+    def test_no_two_articles_share_an_identifier(self, manifest, documents_present):
+        for name in manifest.checksums:
+            if not name.startswith("documents/"):
+                continue
+            payload = json.loads((CORPUS / name).read_text(encoding="utf-8"))
+            ids = [a["article_id"] for a in payload["articles"]
+                   if a["is_article"] and not a["is_repealed"]]
+            assert len(ids) == len(set(ids)), f"{payload['name']} has colliding ids"
+
+    def test_branch_articles_keep_their_branch_number(self, manifest, documents_present):
+        """Dropping 조문가지번호 collapsed fourteen provisions onto the id "7"."""
+        found = False
+        for name in manifest.checksums:
+            if not name.startswith("documents/"):
+                continue
+            payload = json.loads((CORPUS / name).read_text(encoding="utf-8"))
+            for article in payload["articles"]:
+                if article.get("branch_no"):
+                    assert "-" in article["article_id"]
+                    assert "의" in article["label"]
+                    found = True
+        assert found, "no branch article in the corpus; this test proves nothing"
+
+
+class TestSealedSplit:
+    def test_the_test_split_is_sealed_until_the_protocol_is_frozen(self, documents_present):
+        from rag_profile_selector.corpus import Corpus, SealedSplitError
+        if not (CORPUS / "splits.json").exists():
+            pytest.skip("no splits")
+        corpus = Corpus.open(CORPUS)
+        corpus.queries("train")
+        with pytest.raises(SealedSplitError):
+            corpus.queries("test")
+        assert corpus.freeze_protocol().queries("test")
+
+    def test_the_split_seed_is_recorded(self, documents_present):
+        from rag_profile_selector.corpus import Corpus
+        if not (CORPUS / "splits.json").exists():
+            pytest.skip("no splits")
+        assert Corpus.open(CORPUS).provenance()["split_seed"]

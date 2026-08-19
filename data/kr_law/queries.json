@@ -1,0 +1,58 @@
+{
+  "_about": {
+    "purpose": "조문 단위 근거가 달린 한국어 법령 질의 집합. 각 질의의 gold는 '법령MST:조문식별자'.",
+    "authoring_rule": "조문 제목을 그대로 베끼지 않는다. 조문 제목을 복사하면 어휘 일치만으로 정답이 나와서, 어떤 검색 프로파일이 나은지를 구분하지 못한다. 사람이 실제로 물어볼 말로 쓴다.",
+    "difficulty": {
+      "lexical": "질의어가 조문에 그대로 나온다. BM25에 유리할 것으로 예상.",
+      "paraphrase": "같은 뜻을 다른 말로 물었다. 조문 어휘와 겹치는 부분이 적다.",
+      "situational": "법률 용어 없이 상황만 서술했다. 사용자가 실제로 묻는 방식에 가장 가깝고 가장 어렵다."
+    },
+    "caveat": "난이도는 저자가 붙인 라벨이지 측정값이 아니다. scripts/check_query_set.py가 실제 어휘 중복을 재서 라벨과 맞는지 확인한다."
+  },
+  "queries": [
+    {"id": "q001", "text": "개인정보를 수집할 때 지켜야 하는 기본 원칙이 뭔가요", "evidence": ["270351:3"], "difficulty": "lexical"},
+    {"id": "q002", "text": "정보주체에게는 어떤 권리가 있나요", "evidence": ["270351:4"], "difficulty": "lexical"},
+    {"id": "q003", "text": "회사가 내 정보를 다른 회사에 넘기려면 어떤 조건이 필요한가요", "evidence": ["270351:17"], "difficulty": "paraphrase"},
+    {"id": "q004", "text": "쓸 일이 없어진 고객 정보는 계속 보관해도 되나요", "evidence": ["270351:21"], "difficulty": "situational"},
+    {"id": "q005", "text": "건강 상태나 정치적 견해 같은 정보도 일반 정보와 똑같이 다뤄도 되나요", "evidence": ["270351:23"], "difficulty": "situational"},
+    {"id": "q006", "text": "주민등록번호처럼 개인을 특정할 수 있는 번호를 처리할 때 제한이 있나요", "evidence": ["270351:24"], "difficulty": "paraphrase"},
+    {"id": "q007", "text": "매장에 CCTV를 달려고 하는데 법적으로 문제가 없을까요", "evidence": ["270351:25"], "difficulty": "situational"},
+    {"id": "q008", "text": "개인정보 처리 업무를 외부 업체에 맡길 때 지켜야 할 게 있나요", "evidence": ["270351:26"], "difficulty": "paraphrase"},
+    {"id": "q009", "text": "회사를 매각하면 보유하던 고객 정보는 어떻게 되나요", "evidence": ["270351:27"], "difficulty": "situational"},
+    {"id": "q010", "text": "개인정보 보호위원회는 어떤 조직인가요", "evidence": ["270351:7"], "difficulty": "lexical"},
+    {"id": "q011", "text": "보호위원회 위원은 몇 년 동안 일하나요", "evidence": ["270351:7-4"], "difficulty": "paraphrase"},
+    {"id": "q012", "text": "보호위원회 위원이 될 수 없는 사람은 누구인가요", "evidence": ["270351:7-7"], "difficulty": "paraphrase"},
+    {"id": "q013", "text": "동의를 받을 때 형식적으로 지켜야 하는 요건이 있나요", "evidence": ["270351:22"], "difficulty": "paraphrase"},
+    {"id": "q014", "text": "처음 밝힌 목적과 다른 용도로 정보를 써도 되나요", "evidence": ["270351:18"], "difficulty": "situational"},
+
+    {"id": "q015", "text": "전자금융거래에서 접근매체는 어떻게 관리해야 하나요", "evidence": ["280277:6"], "difficulty": "lexical"},
+    {"id": "q016", "text": "이체를 잘못 눌렀는데 취소할 수 있나요", "evidence": ["280277:14"], "difficulty": "situational"},
+    {"id": "q017", "text": "공인인증서를 분실했을 때 손해는 누가 부담하나요", "evidence": ["280277:10"], "difficulty": "situational"},
+    {"id": "q018", "text": "송금이 언제 완료된 것으로 보나요", "evidence": ["280277:13"], "difficulty": "paraphrase"},
+    {"id": "q019", "text": "거래 내역이 틀렸을 때 정정을 요구할 수 있나요", "evidence": ["280277:8"], "difficulty": "paraphrase"},
+    {"id": "q020", "text": "금융회사는 전자금융거래 기록을 얼마나 보관해야 하나요", "evidence": ["280277:22"], "difficulty": "paraphrase"},
+    {"id": "q021", "text": "전자금융거래의 안전성을 확보하기 위한 의무가 있나요", "evidence": ["280277:21"], "difficulty": "lexical"},
+    {"id": "q022", "text": "선불카드에 남은 잔액을 현금으로 돌려받을 수 있나요", "evidence": ["280277:19"], "difficulty": "situational"},
+    {"id": "q023", "text": "약관을 바꾸면 고객에게 알려야 하나요", "evidence": ["280277:24"], "difficulty": "paraphrase"},
+
+    {"id": "q024", "text": "소비자에게 보장되는 기본적인 권리에는 무엇이 있나요", "evidence": ["277233:4"], "difficulty": "lexical"},
+    {"id": "q025", "text": "위험한 제품으로부터 소비자를 보호하기 위한 국가의 조치는 무엇인가요", "evidence": ["277233:8"], "difficulty": "paraphrase"},
+    {"id": "q026", "text": "광고에 지켜야 하는 기준이 따로 있나요", "evidence": ["277233:11"], "difficulty": "lexical"},
+    {"id": "q027", "text": "물건을 샀는데 문제가 생기면 어디에 도움을 요청하나요", "evidence": ["277233:16"], "difficulty": "situational"},
+    {"id": "q028", "text": "사업자가 소비자에 대해 지는 책무는 무엇인가요", "evidence": ["277233:19"], "difficulty": "lexical"},
+    {"id": "q029", "text": "제품에 무엇을 표시해야 하는지 정한 규정이 있나요", "evidence": ["277233:10"], "difficulty": "paraphrase"},
+
+    {"id": "q030", "text": "금융회사가 고객에게 상품을 권할 때 적합한지 따져봐야 하나요", "evidence": ["277247:17"], "difficulty": "paraphrase"},
+    {"id": "q031", "text": "금융상품을 팔 때 어디까지 설명해줘야 하나요", "evidence": ["277247:19"], "difficulty": "paraphrase"},
+    {"id": "q032", "text": "대출을 받으려는데 다른 상품 가입을 강요당했습니다", "evidence": ["277247:20"], "difficulty": "situational"},
+    {"id": "q033", "text": "금융회사 직원이 단정적으로 수익을 보장한다고 말했습니다", "evidence": ["277247:21"], "difficulty": "situational"},
+    {"id": "q034", "text": "계약하고 나서 계약서를 못 받았는데 받을 수 있나요", "evidence": ["277247:23"], "difficulty": "situational"},
+    {"id": "q035", "text": "금융소비자를 나이나 성별로 다르게 대우해도 되나요", "evidence": ["277247:15"], "difficulty": "paraphrase"},
+
+    {"id": "q036", "text": "산업데이터를 활용할 때 지켜야 할 원칙이 있나요", "evidence": ["281883:9"], "difficulty": "lexical"},
+    {"id": "q037", "text": "인공지능 활용을 지원하는 전문회사 제도가 있나요", "evidence": ["281883:11"], "difficulty": "lexical"},
+    {"id": "q038", "text": "새 기술을 시도하려는데 기존 규제가 걸립니다. 풀어주는 절차가 있나요", "evidence": ["281883:17"], "difficulty": "situational"},
+    {"id": "q039", "text": "인공지능 관련 인력을 키우기 위한 지원이 있나요", "evidence": ["281883:21"], "difficulty": "paraphrase"},
+    {"id": "q040", "text": "산업데이터를 쓴 제품의 안전은 어떻게 담보하나요", "evidence": ["281883:25"], "difficulty": "paraphrase"}
+  ]
+}
