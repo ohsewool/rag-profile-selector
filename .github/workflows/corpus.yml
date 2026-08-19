@@ -1,0 +1,97 @@
+# The corpus tests that matter most cannot run on every push.
+#
+# Documents are not redistributed, so a fresh clone has a manifest and no files,
+# and nine tests skip - the ones that check the fetched statutes are segmented
+# by article, that identifiers are unique, that 제7조 and 제7조의2 did not
+# collapse together, and that no document is the frameset an early parser
+# mistook for a statute. Those are the tests that say the corpus is what the
+# manifest claims.
+#
+# Fetching on every push would hit a public government API for no reason, so
+# this runs weekly instead. It has a second use: a statute that gets amended
+# changes its checksum, and this job is what says so. A mismatch here is not a
+# broken build - it means the experiment's numbers were computed on text that no
+# longer exists, which is worth being told.
+
+name: corpus
+
+on:
+  schedule:
+    - cron: "37 4 * * 1"     # Mondays, off the hour
+  workflow_dispatch:
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install
+        run: pip install -r requirements.txt
+
+      - name: Check out document-intelligence
+        uses: actions/checkout@v4
+        with:
+          repository: ohsewool/document-intelligence
+          path: .sibling/document-intelligence
+
+      - name: Fetch the statutes
+        run: python scripts/fetch_kr_law_corpus.py --out /tmp/fresh --limit 14
+
+      - name: Compare against the committed manifest
+        run: |
+          python - <<'PY'
+          import json, sys
+          from pathlib import Path
+
+          committed = json.loads(Path("data/kr_law/manifest.json").read_text(encoding="utf-8"))
+          fresh = json.loads(Path("/tmp/fresh/manifest.json").read_text(encoding="utf-8"))
+
+          old, new = committed["checksums"], fresh["checksums"]
+          # index.json records retrieval order and counts, so it moves whenever
+          # anything else does; comparing it would report every drift twice.
+          documents = {k for k in old if k.startswith("documents/")}
+
+          missing = sorted(documents - set(new))
+          added = sorted(k for k in new if k.startswith("documents/") and k not in old)
+          changed = sorted(k for k in documents & set(new) if old[k] != new[k])
+
+          for label, items in (("사라짐", missing), ("새로 나타남", added), ("내용 변경", changed)):
+              for item in items:
+                  print(f"::warning::{label}: {item}")
+
+          if missing or added or changed:
+              print(f"::warning::법령 {len(missing) + len(added) + len(changed)}건이 "
+                    "커밋된 매니페스트와 다릅니다. 실험 수치는 지금 받은 본문이 아니라 "
+                    "매니페스트가 기록한 본문에 대한 것입니다.")
+          else:
+              print("모든 법령이 커밋된 체크섬과 일치합니다.")
+          PY
+
+      - name: Run the corpus tests against the fetched documents
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.sibling/document-intelligence/src
+        run: |
+          # The fetched corpus stands in for the gitignored one, so the nine
+          # tests that skip on every push actually execute here.
+          cp -r /tmp/fresh/documents data/kr_law/documents
+          cp /tmp/fresh/index.json data/kr_law/index.json
+          cp /tmp/fresh/manifest.json data/kr_law/manifest.json
+          python -m pytest tests/test_kr_law_corpus.py -q -rs
+
+      - name: Refuse a run where the corpus tests skipped anyway
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.sibling/document-intelligence/src
+        run: |
+          skipped=$(python -m pytest tests/test_kr_law_corpus.py -q 2>/dev/null \
+            | grep -oE '[0-9]+ skipped' | grep -oE '^[0-9]+')
+          echo "skipped ${skipped:-0}"
+          if [ "${skipped:-0}" -gt 0 ]; then
+            echo "::error::corpus tests still skipped after fetching; this job verified nothing."
+            exit 1
+          fi

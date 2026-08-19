@@ -52,4 +52,4 @@ jobs:
       - name: Run the suite
         env:
           PYTHONPATH: ${{ github.workspace }}/.sibling/document-intelligence/src
-        run: python -m pytest -q
+        run: python -m pytest -q -rs   # -rs names every skip and why
