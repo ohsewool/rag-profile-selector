@@ -25,7 +25,7 @@ jobs:
           cache: pip
 
       - name: Install
-        run: pip install pytest
+        run: pip install -r requirements.txt
 
       # grounding needs the sibling repository. Without it, importorskip drops
       # 26 tests and the run still passes - which is the failure this job is
@@ -37,6 +37,8 @@ jobs:
           path: .sibling/document-intelligence
 
       - name: Refuse a silently shrinking suite
+        env:
+          PYTHONPATH: ${{ github.workspace }}/.sibling/document-intelligence/src
         run: |
           collected=$(python -m pytest --collect-only -q 2>/dev/null \
             | grep -oE '[0-9]+ tests? collected' | grep -oE '^[0-9]+')
