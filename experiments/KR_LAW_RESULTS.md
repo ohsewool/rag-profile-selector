@@ -82,7 +82,7 @@ headroom이 있다는 것과 거기 닿을 수 있다는 것은 다른 이야기
 | rule:lexical-when-confident | **0.0893** | 85.7% |
 | rule:fuse-when-uncertain | 0.1310 | 78.6% |
 | rule:lexical-when-probes-agree | 0.2054 | 71.4% |
-| rule:dense-for-long-queries | 0.4613 | 42.9% |
+| rule:dense-for-long-queries | 0.3899 | 50.0% |
 
 넷 중 하나가 기준선을 이겼다. **그리고 그것은 결과가 아니다.**
 
@@ -136,8 +136,32 @@ python3 experiments/kr_law_selection.py --test
 | rule:lexical-when-confident | 0.0694 | 83.3% |
 | rule:lexical-when-probes-agree | 0.0694 | 83.3% |
 | rule:fuse-when-uncertain | 0.0694 | 83.3% |
-| rule:dense-for-long-queries | 0.2708 | 66.7% |
+| rule:dense-for-long-queries | 0.3264 | 58.3% |
 | oracle | 0.0000 | 100.0% |
+
+### 정정 (2026-08-21) — 규칙 하나가 규칙이 아니었다
+
+`rule:dense-for-long-queries`가 `query_length`라는 특징을 읽고 있었다. **그런 특징은
+만들어지지 않는다** — 있는 것은 `query_token_count`와 `query_char_count`다.
+`f.get("query_length", 0.0)`이 조용히 0.0을 돌려주니 `>= 8`은 언제나 거짓이었고,
+이 규칙은 28건 전부에서 `bm25-char`를 골랐다. **이름과 정반대로 한 번도 dense를
+고르지 않았고, 사실상 `fixed:bm25-char`를 다른 이름으로 한 줄 더 센 것이다.**
+
+오타 하나가 실험 하나를 조용히 무효로 만들었다. 위 두 표에서 이 행의 수치를
+고쳤다(train+val 0.4613→0.3899, test 0.2708→0.3264).
+
+**결론은 바뀌지 않는다.** 기준선을 이긴 규칙은 여전히 `lexical-when-confident`
+하나뿐이고 순이득은 여전히 1건이며, test split에서는 여전히 어느 규칙도 기준선을
+이기지 못한다. 고친 규칙은 양쪽에서 더 나빠졌다.
+
+**다만 이 행의 test 수치는 봉인 해제 이후에 다시 계산한 것이다.** 다른 행들과
+같은 무게로 읽으면 안 된다 — 규칙을 고치고 test에서 다시 재는 것은 프로토콜이
+막으려던 바로 그 순서다. 남겨두는 이유는, 실행된 적 없는 규칙의 숫자를 그대로
+두는 것이 더 나쁘기 때문이다.
+
+이제 각 규칙은 자기가 읽는 특징을 선언하고, `validate_rules()`가 그 특징이 실제로
+생성되는지 확인한 뒤에야 실험이 진행된다. 갈리지 않는 규칙은 실행 중에 경고로
+표시된다 — 고정 프로파일을 다른 이름으로 세지 않기 위해서다.
 
 **규칙 넷 중 어느 것도 기준선을 이기지 못했다.** train+val에서 이겼던 `lexical-when-confident`는 여기서 기준선과 **정확히 같은 값**이다 — 12건 전부에서 dense와 동일한 선택을 했다는 뜻이고, 그 "승리"가 28건 표본의 잡음이었다는 가장 직접적인 증거다.
 

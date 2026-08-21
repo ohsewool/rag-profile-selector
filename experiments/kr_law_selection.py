@@ -107,23 +107,59 @@ def build(args):
 
 
 # Each rule is a stated belief about when lexical retrieval is trustworthy.
+# 각 규칙은 자기가 읽는 특징을 **선언한다**. 선언하지 않으면 `f.get(name, 0.0)`이
+# 없는 특징에 대해 조용히 0.0을 돌려주고, 조건은 늘 같은 쪽으로 떨어진다.
+#
+# 실제로 그랬다. `rule:dense-for-long-queries`가 `query_length`를 읽었는데 그런
+# 특징은 만들어지지 않는다(있는 것은 `query_token_count`와 `query_char_count`다).
+# 그래서 이 규칙은 28개 질의 전부에서 `bm25-char`를 골랐다 — 이름과 정반대로,
+# 한 번도 dense를 고르지 않았다. **규칙이 아니라 상수였고**, 그런 채로 "규칙 넷을
+# 시험했다"는 문장 안에 들어가 있었다.
+#
+# 오타 하나가 실험 하나를 조용히 무효로 만든다. 그래서 `validate_rules`가 선언된
+# 특징이 실제로 생성되는지 확인하고, 없으면 실행을 멈춘다.
 RULES = {
     "rule:lexical-when-confident":
         # A clear leader in the cheap ranking suggests the term match is real.
         (lambda f: "bm25-char" if f.get("top1_margin", 0.0) >= 0.25 else "dense",
-         "cheap profile when its top hit stands clearly ahead"),
+         "cheap profile when its top hit stands clearly ahead",
+         ("top1_margin",)),
     "rule:lexical-when-probes-agree":
         # Two tokenizers landing on the same articles is corroboration.
         (lambda f: "bm25-char" if f.get("overlap_at_k", 0.0) >= 0.5 else "dense",
-         "cheap profile when word and char tokenization agree"),
+         "cheap profile when word and char tokenization agree",
+         ("overlap_at_k",)),
     "rule:dense-for-long-queries":
         # Longer questions tend to be phrased, not keyworded.
-        (lambda f: "dense" if f.get("query_length", 0.0) >= 8 else "bm25-char",
-         "dense for longer, more conversational queries"),
+        (lambda f: "dense" if f.get("query_token_count", 0.0) >= 8 else "bm25-char",
+         "dense for longer, more conversational queries",
+         ("query_token_count",)),
     "rule:fuse-when-uncertain":
         (lambda f: "dense" if f.get("score_decay", 0.0) < 0.5 else "hybrid-all",
-         "dense when the cheap ranking is flat, fusion otherwise"),
+         "dense when the cheap ranking is flat, fusion otherwise",
+         ("score_decay",)),
 }
+
+
+def validate_rules(features):
+    """규칙이 읽는다고 선언한 특징이 실제로 있는가.
+
+    없으면 규칙은 상수가 되고, 상수는 결과를 만들지 않으면서 표에 한 줄을
+    차지한다. 조용히 지나가는 것보다 멈추는 편이 낫다.
+    """
+    available = set(next(iter(features.values())))
+    missing = {name: [f for f in declared if f not in available]
+               for name, (_, _, declared) in RULES.items()
+               if any(f not in available for f in declared)}
+    if missing:
+        raise SystemExit(
+            "규칙이 존재하지 않는 특징을 읽는다: " + repr(missing)
+            + f"\n생성되는 특징: {sorted(available)}")
+
+
+def rule_is_constant(rule, features):
+    """이 규칙이 실제로 갈리는가. 한 가지만 고르면 선택기가 아니다."""
+    return len({rule(f) for f in features.values()}) < 2
 
 
 def main() -> int:
@@ -143,7 +179,14 @@ def main() -> int:
 
     selectors = [FixedSelector(name) for name in PROFILES]
     selectors.append(OracleSelector({o.query_id: o for o in outcomes}))
-    selectors += [RuleSelector(rule, name=name) for name, (rule, _) in RULES.items()]
+    validate_rules(features)
+    selectors += [RuleSelector(rule, name=name) for name, (rule, _, _) in RULES.items()]
+
+    constant = [name for name, (rule, _, _) in RULES.items()
+                if rule_is_constant(rule, features)]
+    if constant:
+        # 고정 프로파일과 같은 것을 다른 이름으로 세는 일을 막는다.
+        print(f"\n⚠ 갈리지 않는 규칙(=고정 프로파일): {', '.join(constant)}")
 
     print(f"{'선택기':<32}{'평균 regret':>12}{'최대':>8}{'최적 선택률':>12}")
     print("-" * 66)
@@ -167,7 +210,7 @@ def main() -> int:
             # A mean over 28 queries hides how many of them the rule actually
             # touched. A win built on a net of one query is a win built on one
             # query, and reporting only the mean would let it pass as a result.
-            rule, description = RULES[name]
+            rule, description, _ = RULES[name]
             better = worse = 0
             for query_id, found in features.items():
                 outcome = next(o for o in outcomes if o.query_id == query_id)
