@@ -24,6 +24,19 @@ Do not describe this project as the first general RAG Auto-Tuner or as a complet
 - Before work, read `docs/PROJECT_SPEC.md`, `docs/DECISIONS.md`, `docs/TASKS.md`, and `docs/STATUS.md`.
 - Work only on `AUTO_READY` tasks unless the user explicitly approves an item under `NEEDS_APPROVAL`.
 - `AUTO_READY` is limited to repository inspection, environment bootstrap planning, data-protocol planning, profile-specification planning, evaluation-runner planning, and test planning.
+
+> **착수 단계 게이트는 소진됐다 (2026-08-21).** 위의 "AUTO_READY is limited to ... planning"는 착수 시점의 제약이고,
+> 그때는 맞았다. 지금 이 저장소에는 한국어 법령 745조문 위의 실험과 프로파일 5종 비교, 봉인 split 개봉까지 끝났고 테스트 243개가 돈다. 그 문장을 그대로 두면 **다음 작업이 이미
+> 끝난 단계로 되돌아간다** — 형제 저장소 `rag-profile-selector`의 `AGENTS.md`가 몇 달간
+> 쓰지 않는 코퍼스를 지시하고 있던 것과 같은 종류의 사고다.
+>
+> `docs/TASKS.md`와 `docs/STATUS.md`는 착수 계획의 **기록으로 선언**돼 있다. 지금 상태를
+> 알려면 [README](README.md)와 그 문서들이 가리키는 실제 결과를 본다.
+>
+> **아래 안전 제약은 그대로 유효하다** — 실서비스·실계정·실크리덴셜 금지, 승인 없는
+> 다운로드·장시간 작업 금지, 측정하지 않은 결과를 주장하지 않기. 소진된 것은 단계
+> 게이트뿐이다.
+
 - Current approval does not authorize application implementation, dataset/model downloads, index construction, retrieval experiments, or long-running jobs.
 - Prefer Python and a modular design manageable by one undergraduate developer.
 - Do not add APIs, dashboards, Docker, MLflow, unnecessary distributed systems, paid services, or production infrastructure.
