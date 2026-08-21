@@ -2,7 +2,11 @@
 
 ## Result status
 
-**No datasets or models have been downloaded, and no retrieval, training, or evaluation run has occurred. There are no empirical findings.**
+**이 문장은 더 이상 사실이 아니다.** 원래 여기에는 "내려받은 데이터셋도 모델도 없고, 검색·학습·평가를 실행한 적이 없으며, 경험적 결과가 없다"고 적혀 있었다. 착수 시점에는 맞았고, 그 뒤로 고쳐지지 않았다.
+
+실제로는 한국어 법령 14건(745조문)을 받아 프로파일 5개를 비교했고, 봉인했던 test split을 열었으며, dense 모델 2종을 비교했다. **결과는 [`experiments/KR_LAW_RESULTS.md`](../experiments/KR_LAW_RESULTS.md)에 있다.**
+
+아래 템플릿은 그대로 둔다 — 보고 구조를 정의하는 것이 이 파일의 나머지 역할이고, 그 부분은 여전히 쓰인다.
 
 This file defines the reporting structure only. Planned metrics, stage gates, and acceptance criteria are not results.
 
@@ -91,4 +95,4 @@ Report B1 best fixed, B2 rule-based, B3 query-only, B4 query-plus-probe, and B5 
 
 ## Current findings
 
-None. The project remains in the specification and planning phase.
+이 파일에는 없다. 실제 결과는 [`experiments/KR_LAW_RESULTS.md`](../experiments/KR_LAW_RESULTS.md)에 있다 — 프로파일 비교, headroom, 규칙 선택기, 봉인 split 개봉, dense 모델 비교.
