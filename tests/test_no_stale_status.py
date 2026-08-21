@@ -88,7 +88,14 @@ def test_no_living_document_names_a_corpus_this_project_did_not_use():
         text = path.read_text(encoding="utf-8", errors="replace")
         for name in planned_but_unused:
             for line in text.splitlines():
-                if name in line and "D-002" not in line and "쓰지 않" not in line:
+                # 정정문은 원문을 인용해야 무엇이 뒤집혔는지 읽힌다. 인용은 같은
+                # 줄에 정정 표시가 있어 구분된다 - 없으면 그것은 여전히 지시다.
+                # (이 예외를 만든 계기: `AGENTS.md`의 D-003 정정을 쓰면서 내가
+                # 이 검사에 걸렸다. 걸린 것이 맞았고, 구분이 없던 것이 문제였다.)
+                corrected = any(mark in line for mark in
+                                ("D-002", "D-003", "쓰지 않", "not HotpotQA",
+                                 "never downloaded", "belong to the"))
+                if name in line and not corrected:
                     offenders.append(f"{path.relative_to(ROOT)}: {name}")
     assert not offenders, (
         "쓰지 않은 데이터셋을 살아 있는 문서가 말한다:\n  " + "\n  ".join(offenders)
