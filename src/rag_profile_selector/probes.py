@@ -90,10 +90,37 @@ class ProbeResult:
         return len(set(self.sources)) if self.sources else len(set(self.identifiers))
 
 
-def overlap_at_k(first: ProbeResult, second: ProbeResult, *, k: int = 10) -> float:
-    """Share of the top-k that both retrievers returned, in any order."""
+def _cutoff(k: object) -> int:
+    """Validate a top-k cutoff.
+
+    `overlap_at_k` raised `ProbeError` for `k < 1`; `rank_agreement` checked
+    nothing and returned **0.5** — its documented "nothing to compare" value. Two
+    functions, the same parameter, different contracts, and no reason recorded
+    for the difference.
+
+    That mattered here more than it looks. 0.5 is supposed to be a fact about the
+    data: the retrievers shared fewer than two results. A 0.5 produced by `k=0`
+    is a fact about the caller, and the two were indistinguishable in the output.
+    This repository exists to keep published numbers honest, so a metric that
+    answers a meaningless question with a plausible number is the wrong default.
+
+    `bool` is excluded because it is a subclass of `int` and `True` silently
+    means top-1. `profiles.py` and `fusion.py` already exclude it; `probes.py`
+    was the one module that did not.
+
+    Non-integers used to reach the slice and raise `TypeError` from deep inside
+    (`nan`, `inf`, `2.5`). Same refusal, named at the boundary.
+    """
+    if isinstance(k, bool) or not isinstance(k, int):
+        raise ProbeError("k must be an integer")
     if k < 1:
         raise ProbeError("k must be at least 1")
+    return k
+
+
+def overlap_at_k(first: ProbeResult, second: ProbeResult, *, k: int = 10) -> float:
+    """Share of the top-k that both retrievers returned, in any order."""
+    k = _cutoff(k)
     left = set(first.identifiers[:k])
     right = set(second.identifiers[:k])
     if not left or not right:
@@ -107,7 +134,11 @@ def rank_agreement(first: ProbeResult, second: ProbeResult, *, k: int = 10) -> f
     Rank-based on purpose: comparing BM25 and cosine scores directly would be
     comparing two different units. Returns 1.0 for identical ordering, 0.0 for
     reversed, and 0.5 when there is nothing to compare.
+
+    **0.5 is a statement about the data**, not about the call. `k` is validated
+    so that a meaningless cutoff is refused rather than answered — see `_cutoff`.
     """
+    k = _cutoff(k)
     left = list(first.identifiers[:k])
     right = list(second.identifiers[:k])
     shared = [item for item in left if item in right]
