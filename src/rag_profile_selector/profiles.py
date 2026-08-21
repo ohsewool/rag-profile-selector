@@ -75,6 +75,26 @@ _DENSE_K4: Final = RetrievalProfile(RetrievalMethod.DENSE, 4)
 _HYBRID_RRF_K4: Final = RetrievalProfile(RetrievalMethod.HYBRID_RRF, 4)
 _HYBRID_RRF_K8: Final = RetrievalProfile(RetrievalMethod.HYBRID_RRF, 8)
 
+# **이 목록은 실험이 쓰지 않는다 (2026-08-22 확인).**
+#
+# 여기 넷은 착수 계획의 pilot 프로파일이다(`docs/DECISIONS.md` D-003, HotpotQA 시절).
+# 실제로 돌아간 실험은 한국어 법령 코퍼스에서 **다른 다섯**을 쓴다 —
+# `bm25-word`, `bm25-char`, `hybrid-rrf`, `dense`, `hybrid-all`.
+#
+# 이 모듈을 import하는 곳은 테스트뿐이다. `experiments/`는 `resolve_profile`도
+# `validate_profile`도 부르지 않는다. **승인되지 않은 설정이 비교표에 들어오는 것을
+# 막으려고 만든 관문이, 설정을 고르는 코드에서 참조되지 않는다** — 이 프로젝트가
+# 처음 만난 결함과 같은 모양이다(`access.py`에 권한 헬퍼가 다 있었고 `ledger.py`가
+# 하나도 import하지 않았다).
+#
+# 지금 배선하지 않는 이유를 적어둔다. `RetrievalProfile`은 `(method, k)`이고,
+# 실제 프로파일은 그것으로 표현되지 않는다: `bm25-word`와 `bm25-char`는 **토큰화**가
+# 다르고(모델에 그 축이 없다), `hybrid-all`은 셋을 융합한 것이라 두 개를 융합하는
+# `HYBRID_RRF`가 아니다. 모델을 급히 뜯어고치는 것은 지금 상태를 정확히 적어두는
+# 것보다 나쁘다 - 그건 다음 코퍼스에서 어휘 중복으로 층화하기로 한 결정과 함께
+# 다뤄야 할 설계 변경이다.
+#
+# 그때까지 이 모듈은 **계획의 기록이자 거부 로직의 시험대**다. 활성 관문이 아니다.
 APPROVED_PROFILES: Final[tuple[RetrievalProfile, ...]] = (
     _BM25_K4,
     _DENSE_K4,

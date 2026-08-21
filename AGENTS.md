@@ -12,7 +12,7 @@ Do not describe this project as the first general RAG Auto-Tuner or as a complet
 
 - `docs/PROJECT_SPEC.md` is the approved scope baseline.
 - The MVP corpus is **Korean statutes** fetched from the 국가법령정보 OPEN API under 공공누리 제1유형 (`scripts/fetch_kr_law_corpus.py`), not HotpotQA. The original plan said HotpotQA and it was never downloaded; the reversal and what can still be verified about it are recorded as the D-002 correction in `docs/DECISIONS.md`. This line said HotpotQA for months and would have steered the next piece of work back to a corpus this project does not use.
-- The pilot profiles are BM25 `k=4`, dense `k=4`, hybrid RRF `k=4`, and hybrid RRF `k=8`, plus `hybrid-all`.
+- The profiles the experiments actually run are `bm25-word`, `bm25-char`, `hybrid-rrf` (word+char), `dense` (e5-small), and `hybrid-all` (all three fused). The four pilot profiles named in D-003 — BM25 `k=4`, dense `k=4`, hybrid RRF `k=4`, hybrid RRF `k=8` — belong to the HotpotQA plan and are still encoded in `src/rag_profile_selector/profiles.py`, which the experiments do not consult. **I corrected this line once already and got it half right**, keeping the stale four and appending `hybrid-all`; the D-003 correction in `docs/DECISIONS.md` records what the set actually is.
 - The primary contribution is the held-out comparison of query-only and query-plus-probe selection using gold evidence quality and exact configuration-selection regret.
 - Use one configuration-conditioned model to predict evidence-retrieval quality. Do not train separate models per profile or cost/latency prediction models.
 - Calculate cost deterministically from tokens, calls, and a fixed versioned price schedule. Measure latency experimentally and report median and p95.

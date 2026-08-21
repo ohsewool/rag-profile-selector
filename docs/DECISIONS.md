@@ -43,6 +43,40 @@ Use HotpotQA for MVP development and evaluation. SciFact is an optional final da
 
 The MVP candidate set is BM25 `k=4`, dense `k=4`, hybrid RRF `k=4`, and hybrid RRF `k=8`. Profile expansion is conditional on validation-only diversity evidence and explicit approval.
 
+### D-003 정정 (2026-08-22): 프로파일 집합도 바뀌었고, 승인 목록은 배선되지 않았다
+
+D-002가 코퍼스에 대해 그랬듯 **D-003의 프로파일 집합도 뒤집혔다.** 위에는 pilot이
+`BM25 k=4`·`dense k=4`·`hybrid RRF k=4`·`hybrid RRF k=8` 넷이라고 적혀 있는데,
+한국어 법령 실험이 돌리는 것은 다른 다섯이다:
+
+| 실험이 돌리는 것 | 무엇 |
+|---|---|
+| `bm25-word` | 어절 토큰화 |
+| `bm25-char` | 문자 3-gram |
+| `hybrid-rrf` | 위 둘의 RRF 융합 |
+| `dense` | e5-small |
+| `hybrid-all` | 셋 전부 융합 |
+
+**더 중요한 것**: `src/rag_profile_selector/profiles.py`가 승인되지 않은 설정을
+거부하려고 존재하는데, **설정을 고르는 코드가 그것을 부르지 않는다.**
+`experiments/`는 `resolve_profile`도 `validate_profile`도 import하지 않고, 이 모듈을
+쓰는 것은 테스트뿐이다. 이 프로젝트가 처음 만난 결함과 같은 모양이다 — `access.py`에
+권한 헬퍼가 전부 있었고 `ledger.py`가 하나도 import하지 않았다.
+
+**지금 배선하지 않는다.** `RetrievalProfile`은 `(method, k)`이고 실제 프로파일은
+그것으로 표현되지 않는다 — `bm25-word`와 `bm25-char`는 **토큰화**가 다른데 모델에
+그 축이 없고, `hybrid-all`은 셋 융합이라 둘을 융합하는 `HYBRID_RRF`가 아니다.
+모델을 급히 뜯어고치는 것은 지금 상태를 정확히 적어두는 것보다 나쁘다. 다음 코퍼스에서
+어휘 중복으로 층화하기로 한 결정과 함께 다뤄야 할 설계 변경이다.
+
+그때까지 `profiles.py`는 **계획의 기록이자 거부 로직의 시험대**이지 활성 관문이
+아니며, 모듈 자신이 그렇게 적고 있다.
+
+**성립하는 계약 하나는 확인했다**: 실험이 돌리는 다섯과 `KR_LAW_RESULTS.md`의 표에
+실린 다섯이 같다. `tests/test_published_profiles.py`가 고정한다 — 표에 없는 프로파일을
+돌리거나 돌리지 않은 프로파일을 표에 싣는 것을 막는다.
+
+
 ### D-004: One configuration-conditioned quality model
 
 Train one model on query-profile examples to predict gold evidence quality from query features, optional probe features, and the candidate profile descriptor. Do not train separate models per profile or models that predict cost or latency.
