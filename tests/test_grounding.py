@@ -185,3 +185,27 @@ class TestDocumentModelInterop:
         index.add("report:page-2", document_id="report", page_number=2)
         citation = to_evidence_citation(index.resolve("report:page-2"))
         assert citation.references[0].page_number == 2
+
+
+class TestGroundingRefusesAnUnnamedEvidence:
+    """이름 없는 근거는 무엇을 가리키는지 말할 수 없다.
+
+    커버리지 훑기에서 나왔다 - 이 거부는 한 번도 발동한 적이 없었다. `grounding`만
+    형제 저장소를 필요로 하므로 거부 테스트를 모아둔 `test_rejections.py`가 아니라
+    여기 둔다. 저쪽에 넣었더니 `test_optional_sibling.py`가 의존이 퍼졌다고 잡았고,
+    그 판단이 옳다.
+    """
+
+    def test_an_empty_identifier_is_refused(self):
+        from rag_profile_selector.grounding import GroundingError, GroundingIndex
+
+        with pytest.raises(GroundingError, match="must not be empty"):
+            GroundingIndex().add("", document_id="d1", page_number=1, region_identifier=None)
+
+    def test_a_named_one_is_accepted(self):
+        """거부만 확인하면 전부 거부하는 구현도 통과한다."""
+        from rag_profile_selector.grounding import GroundingIndex
+
+        index = GroundingIndex()
+        index.add("e1", document_id="d1", page_number=1, region_identifier="p1-l1")
+        assert "e1" in index
