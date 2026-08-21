@@ -1,5 +1,16 @@
 # Project Specification: Probe-Conditioned RAG Retrieval Profile Selection
 
+<!-- historical: 프로젝트 착수 시점 -->
+> **이 문서는 기록이다.** 착수 시점의 사양이다. "MVP는 HotpotQA만 쓴다"가 여기서 나온다.
+>
+> 그 뒤로 달라진 것: **코퍼스가 HotpotQA에서 한국어 법령으로 바뀌었다.** HotpotQA는 한 번도 내려받지 않았다. 경위와 확인 가능한 근거는 [`DECISIONS.md`의 D-002 정정](DECISIONS.md)에 있다.
+>
+> 지금 상태는 [README](../README.md)에 있다. 여기 적힌 "아직 하지 않았다"·"구현하지 말라"는
+> 항목들은 **당시의 사실이자 당시의 제약**이다. 체크박스를 지금 채우면 계획을 그대로
+> 따른 것처럼 보이고, 실제로 어디서 갈라졌는지가 사라진다. 그래서 고치지 않고 선언한다.
+>
+> 낡았다는 것이 선언이면 기록이고, 선언이 아니면 사고다.
+
 Korean title: **Probe 검색 신호 기반 질의별 RAG 검색 프로필 선택**
 
 ## 1. Project goal and claim boundary

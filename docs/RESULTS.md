@@ -25,7 +25,7 @@ This file defines the reporting structure only. Planned metrics, stage gates, an
 
 ### Reproducibility and leakage checks
 
-- HotpotQA manifest/evidence mapping validated:
+- Corpus manifest / evidence mapping validated:
 - All query-profile rows remain in one grouped split:
 - Test results excluded from development:
 - Four profile specifications/checksums matched:
@@ -73,7 +73,7 @@ Report B1 best fixed, B2 rule-based, B3 query-only, B4 query-plus-probe, and B5 
 
 ### MVP completion assessment
 
-- HotpotQA/evidence mapping validated:
+- Corpus / evidence mapping validated:
 - P1-P4 reproducible:
 - Oracle distribution analyzed:
 - B1-B5 held-out comparison complete:

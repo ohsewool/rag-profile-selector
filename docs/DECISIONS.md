@@ -10,6 +10,35 @@ The project tests whether query-plus-probe features improve per-query retrieval-
 
 Use HotpotQA for MVP development and evaluation. SciFact is an optional final dataset after primary experiments; QASPER is a later stretch goal. Neither is part of MVP completion.
 
+### D-002 정정 (2026-08-21): MVP 코퍼스는 HotpotQA가 아니라 한국어 법령이다
+
+**D-002는 뒤집혔고, 이 로그에 적히지 않았다.** 위에는 "HotpotQA를 MVP 개발·평가에
+쓴다"고 남아 있는데 실제로 만들어진 것은 국가법령정보 OPEN API에서 받은 한국어 법령
+14건(745조문) 위의 실험이다. HotpotQA는 **한 번도 내려받은 적이 없다** — 받는
+스크립트조차 없다.
+
+이 저장소들은 범위 변경을 기록할 줄 안다. 형제 저장소 `mcp-gateway`의 SPEC은 같은
+일을 정확히 해두었다 — *"원래 범위는 테스트베드를 합성 MCP 서버로 제한했다. 다음에
+한해, 그리고 다음에만 그 제한을 해제한다."* **여기서만 하지 않았다.**
+
+**당시의 이유는 적혀 있지 않다.** 그래서 지어내지 않는다. 지금 확인할 수 있는 것만
+적는다:
+
+- 실제로 쓴 코퍼스는 **공공누리 제1유형**이라 체크섬·매니페스트를 저장소에 남기고
+  재현 절차를 공개할 수 있다. 이 저장소의 코퍼스 출처 관문이 요구하는 조건이다.
+- 합성 코퍼스 실험이 먼저 있었고(README "초기 실험"), 그 다음이 실제 코퍼스다.
+  합성에서 실제로 넘어갈 때 어떤 코퍼스를 고를지는 남아 있지 않다.
+- HotpotQA를 받지 않았다는 사실은 검증 가능하다: `scripts/`에 받는 코드가 없고
+  `data/`에 흔적이 없다.
+
+**결정을 바꾼 것이 문제가 아니라, 바꾼 것을 적지 않은 것이 문제다.** 이 저장소의
+원칙이 "뒤집은 판단은 근거와 함께 남긴다"인데, 정작 이 프로젝트가 **무엇인지**를
+정하는 결정이 빠져 있었다. 늦게라도 적되, 당시 이유를 아는 척하지는 않는다.
+
+`docs/PROJECT_SPEC.md`·`EXPERIMENT_PLAN.md`·`TASKS.md`에 남은 HotpotQA 서술은
+착수 시점 계획의 기록으로 선언했다.
+
+
 ### D-003: Four-profile pilot first
 
 The MVP candidate set is BM25 `k=4`, dense `k=4`, hybrid RRF `k=4`, and hybrid RRF `k=8`. Profile expansion is conditional on validation-only diversity evidence and explicit approval.

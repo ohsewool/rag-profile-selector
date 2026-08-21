@@ -65,6 +65,37 @@ def test_no_living_document_says_nothing_has_been_done():
     )
 
 
+def test_no_living_document_names_a_corpus_this_project_did_not_use():
+    """계획은 HotpotQA였고 실제로는 한국어 법령을 썼다.
+
+    `docs/PROJECT_SPEC.md`는 "MVP는 HotpotQA만 쓴다"고 적혀 있었고, HotpotQA는 한 번도
+    내려받지 않았다 - 받는 스크립트조차 없다. 여섯 문서에 22번 나왔다. **사양이
+    만들어지지 않은 프로젝트를 서술하고 있었다.**
+
+    형제 저장소 `mcp-gateway`의 SPEC은 같은 일을 제대로 해두었다("원래 범위는 합성
+    서버로 제한했다. 다음에 한해 해제한다"). 할 줄 알면서 여기서만 안 했다.
+
+    착수 계획은 기록으로 선언했고, 뒤집힘은 `DECISIONS.md`의 D-002 정정에 적었다.
+    이 검사는 그 이름이 다시 **살아 있는** 문서로 새어 나오는 것을 막는다.
+    """
+    planned_but_unused = ("HotpotQA", "SciFact", "QASPER")
+    # 결정 로그는 예외다. **폐기된 결정을 보관하는 것이 그 문서의 본분**이고,
+    # D-002를 지우면 무엇이 뒤집혔는지가 사라진다. 나머지 문서는 지금을 서술한다.
+    offenders = []
+    for path in living():
+        if path.name == "DECISIONS.md":
+            continue
+        text = path.read_text(encoding="utf-8", errors="replace")
+        for name in planned_but_unused:
+            for line in text.splitlines():
+                if name in line and "D-002" not in line and "쓰지 않" not in line:
+                    offenders.append(f"{path.relative_to(ROOT)}: {name}")
+    assert not offenders, (
+        "쓰지 않은 데이터셋을 살아 있는 문서가 말한다:\n  " + "\n  ".join(offenders)
+        + "\n계획의 기록이라면 <!-- historical: 시점 -->으로 선언하라."
+    )
+
+
 class TestTheCheckIsNotVacuous:
     def test_it_looked_at_documents(self):
         assert len(living()) >= 3
@@ -86,6 +117,13 @@ class TestTheCheckIsNotVacuous:
         doc.write_text("<!-- historical: 2026-06 -->\nThere are no empirical findings.",
                        encoding="utf-8")
         assert HISTORICAL.search(doc.read_text(encoding="utf-8"))
+
+    def test_the_unused_corpus_names_are_still_findable_somewhere(self):
+        """선언된 기록에서도 사라졌다면 계획이 지워진 것이고, 그것은 이 처리의
+        의도가 아니다 - 어디서 갈라졌는지가 남아야 한다."""
+        declared = set(documents()) - set(living())
+        assert any("HotpotQA" in path.read_text(encoding="utf-8", errors="replace")
+                   for path in declared), "계획 기록에서 HotpotQA가 사라졌다"
 
     def test_the_phrase_list_is_not_empty(self):
         """`STALE = ()`는 모든 문서를 통과시키면서 검사처럼 보인다."""

@@ -1,5 +1,16 @@
 # Experiment Plan
 
+<!-- historical: 프로젝트 착수 시점 -->
+> **이 문서는 기록이다.** 착수 시점의 실험 계획이다. 데이터셋과 프로파일, 게이트를 HotpotQA 기준으로 정해두었다.
+>
+> 그 뒤로 달라진 것: 실제로 돌린 실험은 한국어 법령 코퍼스 위에서다. 결과는 [`experiments/KR_LAW_RESULTS.md`](../experiments/KR_LAW_RESULTS.md).
+>
+> 지금 상태는 [README](../README.md)에 있다. 여기 적힌 "아직 하지 않았다"·"구현하지 말라"는
+> 항목들은 **당시의 사실이자 당시의 제약**이다. 체크박스를 지금 채우면 계획을 그대로
+> 따른 것처럼 보이고, 실제로 어디서 갈라졌는지가 사라진다. 그래서 고치지 않고 선언한다.
+>
+> 낡았다는 것이 선언이면 기록이고, 선언이 아니면 사고다.
+
 ## 1. Purpose and current status
 
 Test whether query-plus-probe features improve per-query retrieval-profile selection over fixed, rule-based, and query-only learned baselines on held-out HotpotQA queries. The primary evidence is gold evidence-retrieval quality and exact configuration-selection regret.
