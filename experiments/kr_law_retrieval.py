@@ -228,6 +228,8 @@ def main() -> int:
     parser.add_argument("--test", action="store_true",
                         help="평가를 봉인된 test split으로 바꾼다 (동결 이후에만)")
     parser.add_argument("--k", type=int, default=4, help="results per query")
+    parser.add_argument("--dense-model", default=DENSE_MODEL,
+                        help="비교용 다른 임베딩 모델 (README가 인정한 공백)")
     parser.add_argument("--no-dense", action="store_true",
                         help="skip the embedding profile (no model download)")
     args = parser.parse_args()
@@ -253,8 +255,8 @@ def main() -> int:
     }
     dense = None
     if not args.no_dense:
-        print(f"{DENSE_MODEL} 로 조문 {len(articles)}개 임베딩 중...")
-        dense = DenseRetriever(articles)
+        print(f"{args.dense_model} 로 조문 {len(articles)}개 임베딩 중...")
+        dense = DenseRetriever(articles, model_name=args.dense_model)
         print("완료\n")
 
     outcomes: list[QueryOutcome] = []
