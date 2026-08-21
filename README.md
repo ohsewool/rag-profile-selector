@@ -6,7 +6,7 @@
 
 ```bash
 pip install -e .                                   # src/ 레이아웃이라 설치 없이는 import되지 않는다
-python3 -m pytest tests/ -q                        # 199 tests
+python3 -m pytest tests/ -q                        # 215 tests
 python3 scripts/fetch_kr_law_corpus.py             # 한국어 법령 코퍼스 (공공누리 제1유형)
 python3 experiments/kr_law_retrieval.py            # 프로파일 비교 + headroom
 python3 experiments/kr_law_selection.py            # 선택기가 그 headroom에 닿는가
@@ -100,7 +100,7 @@ python3 experiments/kr_law_selection.py            # 선택기가 그 headroom�
 
 ## 남은 작업
 
-- 다음 코퍼스는 난이도 **라벨**이 아니라 어휘 중복 **측정값**으로 층화한다 — test split이 우연히 하드 모드가 된 이유
+- 다음 코퍼스는 난이도 **라벨**이 아니라 어휘 중복 **측정값**으로 층화한다 — test split이 우연히 하드 모드가 된 이유. **도구를 만들어뒀다**: `scripts/stratify_by_overlap.py`. 같은 28건에 적용하면 split 간 평균 중복 격차가 0.1488에서 0.0093으로 좁아지고(30개 seed 전부 동일), 중복 0인 질의도 6/1/2에서 4/2/3으로 퍼진다. **현재 split은 다시 나누지 않는다** — `--write`는 기존 파일이 있으면 거부한다.
 - ~~dense 모델 비교~~ **닫음** — `e5-base`(2.4배)를 돌렸다. MRR 0.714 → 0.688로 **더 큰 모델이 더 낮고**, 질의 단위로는 우세 4·열세 6·동일 18(순 −2)이라 28건 표본에서 우연과 구분되지 않는다. 편의로 고른 e5-small이 정확도를 깎지 않았고, dense가 어휘 기반을 앞선다는 결론은 모델 크기에 견고하다. [측정](experiments/KR_LAW_RESULTS.md)
 
 ## 라이선스

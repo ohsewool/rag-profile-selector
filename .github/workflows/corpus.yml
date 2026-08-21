@@ -98,12 +98,15 @@ jobs:
         env:
           PYTHONPATH: ${{ github.workspace }}/.sibling/document-intelligence/src
         run: |
-          # The fetched corpus stands in for the gitignored one, so the nine
-          # tests that skip on every push actually execute here.
+          # The fetched corpus stands in for the gitignored one, so the tests
+          # that skip on every push actually execute here. Both files need it:
+          # test_kr_law_corpus reads the statutes, test_stratification measures
+          # query/article overlap. A test that skips everywhere is a test that
+          # does not exist.
           cp -r /tmp/fresh/documents data/kr_law/documents
           cp /tmp/fresh/index.json data/kr_law/index.json
           cp /tmp/fresh/manifest.json data/kr_law/manifest.json
-          python -m pytest tests/test_kr_law_corpus.py -q -rs
+          python -m pytest tests/test_kr_law_corpus.py tests/test_stratification.py -q -rs
 
       - name: Check the README's headline numbers against a real run
         if: steps.fetch.outcome == 'success'
@@ -172,7 +175,8 @@ jobs:
           # reported failure over a clean result - which is worse than the
           # silence it was written to break, because it teaches people to
           # ignore the job.
-          summary=$(python -m pytest tests/test_kr_law_corpus.py -q 2>/dev/null | tail -1)
+          summary=$(python -m pytest tests/test_kr_law_corpus.py \
+            tests/test_stratification.py -q 2>/dev/null | tail -1)
           echo "$summary"
           skipped=$(printf '%s' "$summary" | grep -oE '[0-9]+ skipped' | grep -oE '^[0-9]+' || true)
           if [ "${skipped:-0}" -gt 0 ]; then
