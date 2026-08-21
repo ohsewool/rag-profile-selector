@@ -129,6 +129,14 @@ jobs:
           output = Path("/tmp/run.txt").read_text(encoding="utf-8")
           readme = Path("README.md").read_text(encoding="utf-8")
 
+          # 기대값이 워크플로와 README 두 곳에 산다. 한 곳을 소스로 삼으려고
+          # README에서 파싱해봤다가 되돌렸다: 이 수치들은 표가 아니라 산문 안에
+          # 있어서("dense 단독(0.714)보다 나쁘다"), 문장을 다듬는 것만으로 정규식이
+          # 값을 놓친다. 그리고 이 단계는 실패가 아니라 경고를 내므로 **검사기가
+          # 조용히 아무것도 안 하게 된다** - 두 곳에 사는 것보다 나쁜 실패다.
+          #
+          # 대신 아래 `expected not in readme`가 고리를 닫는다: README에서 숫자가
+          # 사라지거나 바뀌면 여기서 걸린다. 두 곳이되, 어긋나면 잡힌다.
           claims = {
               "dense MRR": (r"dense\s+([0-9.]+)", "0.714"),
               "hybrid-all MRR": (r"hybrid-all\s+([0-9.]+)", "0.562"),
