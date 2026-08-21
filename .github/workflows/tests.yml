@@ -64,5 +64,33 @@ jobs:
             exit 1
           fi
 
-      - name: Run the suite
-        run: python -m pytest -q -rs   # -rs names every skip and why
+      # 수집 수 비교는 skip을 볼 수 없다 — skip된 테스트도 수집된다. 그래서 위
+      # 검사가 초록불인 채로 README가 "286 tests"라고 말하는 동안, 갓 클론한
+      # 저장소에서는 **261 통과 · 25 skip**이었다. 코퍼스 본문은 재배포하지 않으니
+      # CI도 그 상태로 돈다 — 여기서 재서 README와 대조한다.
+      #
+      # `.github/workflows/corpus.yml`의 머리말은 "nine tests skip"이라고 적혀
+      # 있었다. 쓸 당시엔 맞았고, 그 뒤 층화 테스트 16개가 추가되며 25가 됐는데
+      # 아무도 재지 않아 그대로 남아 있었다. 사람이 손으로 적은 숫자는 썩는다.
+      - name: Run the suite and compare the without-corpus numbers
+        run: |
+          set -o pipefail
+          python -m pytest -q -rs | tee run.txt   # -rs names every skip and why
+          passed=$(grep -oE '[0-9]+ passed' run.txt | tail -1 | grep -oE '^[0-9]+')
+          skipped=$(grep -oE '[0-9]+ skipped' run.txt | tail -1 | grep -oE '^[0-9]+')
+          claimed_pass=$(grep -oE '[0-9]+ 통과 · [0-9]+ skip' README.md | head -1 \
+            | grep -oE '^[0-9]+')
+          claimed_skip=$(grep -oE '[0-9]+ 통과 · [0-9]+ skip' README.md | head -1 \
+            | grep -oE '[0-9]+ skip' | grep -oE '^[0-9]+')
+          echo "measured: ${passed:-none} passed, ${skipped:-none} skipped"
+          echo "README:   ${claimed_pass:-none} passed, ${claimed_skip:-none} skipped"
+          if [ "${passed:-0}" != "${claimed_pass:-1}" ] || [ "${skipped:-0}" != "${claimed_skip:-1}" ]; then
+            echo "::error::README's without-corpus numbers do not match a measurement."
+            echo "The corpus body is gitignored, so this job runs without it."
+            exit 1
+          fi
+          if [ "${skipped:-0}" -eq 0 ]; then
+            echo "::error::nothing skipped; this job is supposed to run without the corpus."
+            echo "If the corpus is present here, the comparison means nothing."
+            exit 1
+          fi

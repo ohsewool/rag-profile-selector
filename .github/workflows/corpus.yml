@@ -1,11 +1,17 @@
 # The corpus tests that matter most cannot run on every push.
 #
 # Documents are not redistributed, so a fresh clone has a manifest and no files,
-# and nine tests skip - the ones that check the fetched statutes are segmented
-# by article, that identifiers are unique, that 제7조 and 제7조의2 did not
-# collapse together, and that no document is the frameset an early parser
-# mistook for a statute. Those are the tests that say the corpus is what the
-# manifest claims.
+# and **25 tests skip** - nine in `test_kr_law_corpus.py` that check the fetched
+# statutes are segmented by article, that identifiers are unique, that 제7조 and
+# 제7조의2 did not collapse together, and that no document is the frameset an
+# early parser mistook for a statute; and sixteen in `test_stratification.py`
+# that check the overlap tool measures real text. Those are the tests that say
+# the corpus is what the manifest claims.
+#
+# This comment said "nine" until 2026-08-22. It was right when written, and then
+# sixteen more skips were added and nobody measured. The `tests` workflow now
+# compares the without-corpus numbers against the README, so the next drift is a
+# failing job rather than a stale sentence.
 #
 # Fetching on every push would hit a public government API for no reason, so
 # this runs weekly instead. It has a second use: a statute that gets amended
