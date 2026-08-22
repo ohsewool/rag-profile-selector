@@ -6,9 +6,9 @@
 
 ```bash
 pip install -e .                                   # src/ 레이아웃이라 설치 없이는 import되지 않는다
-python3 -m pytest tests/ -q                        # 268 통과 · 49 skip (코퍼스 없이)
+python3 -m pytest tests/ -q                        # 269 통과 · 49 skip (코퍼스 없이)
 python3 scripts/fetch_kr_law_corpus.py             # 한국어 법령 코퍼스 (공공누리 제1유형)
-python3 -m pytest tests/ -q                        # 317 tests (코퍼스 받은 뒤 전부 통과)
+python3 -m pytest tests/ -q                        # 318 tests (코퍼스 받은 뒤 전부 통과)
 python3 experiments/kr_law_retrieval.py            # 프로파일 비교 + headroom
 python3 experiments/kr_law_selection.py            # 선택기가 그 headroom에 닿는가
 ```
@@ -16,7 +16,7 @@ python3 experiments/kr_law_selection.py            # 선택기가 그 headroom�
 **코퍼스 본문은 재배포하지 않는다.** 갓 클론한 저장소에는 매니페스트만 있고 문서가
 없어서 **49개가 skip된다** — 받아온 법령이 조문 단위로 쪼개졌는지, 식별자가 유일한지,
 제7조와 제7조의2가 뭉개지지 않았는지, 층화 도구가 실제 중복을 재는지, 그리고
-**공개된 MRR·regret 표가 지금 코드에서도 그대로 나오는지** 확인하는 것들이다. 위 `fetch_kr_law_corpus.py`를 돌리면 317개가 전부 돈다. 이 두 숫자는 CI가
+**공개된 MRR·regret 표가 지금 코드에서도 그대로 나오는지** 확인하는 것들이다. 위 `fetch_kr_law_corpus.py`를 돌리면 318개가 전부 돈다. 이 두 숫자는 CI가
 재서 이 README와 대조한다(`tests` 워크플로).
 
 ## 결론부터 — 이 코퍼스에서 선택기는 만들 근거가 없다
