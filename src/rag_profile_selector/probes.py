@@ -143,6 +143,15 @@ def rank_agreement(first: ProbeResult, second: ProbeResult, *, k: int = 10) -> f
     right = list(second.identifiers[:k])
     shared = [item for item in left if item in right]
     if len(shared) < 2:
+        # **단축이지 통제가 아니다.** 이 줄을 지워도 답은 같다 — 공유 항목이 0개나
+        # 1개면 아래 이중 루프가 순서쌍을 하나도 만들지 않아 `total == 0`으로 떨어지고
+        # 거기서도 0.5가 나온다. 2026-08-23에 변이 감사가 그것을 말했다: 이 조건을
+        # `False`로 바꿔도 스위트가 초록이었고, **잡히지 않은 유일한 변이**였다.
+        #
+        # 남겨두는 이유는 읽는 사람이다. "비교할 쌍이 없으면 0.5"라는 규칙이 여기
+        # 한 줄로 보이는 편이, 빈 루프의 부수 효과로 같은 값이 나오는 것보다 낫다.
+        # 대신 **통제인 척하지 않도록** 적어둔다 — 실제 통제는 아래의 `0.5`이고,
+        # 그 값이 0이나 1로 바뀌면 모르는 것이 아는 것처럼 특징에 실린다.
         return 0.5
 
     left_rank = {item: index for index, item in enumerate(left)}
