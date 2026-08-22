@@ -1,13 +1,17 @@
 # The corpus tests that matter most cannot run on every push.
 #
 # Documents are not redistributed, so a fresh clone has a manifest and no files,
-# and **37 tests skip** - nine in `test_kr_law_corpus.py` that check the fetched
+# and **49 tests skip** - nine in `test_kr_law_corpus.py` that check the fetched
 # statutes are segmented by article, that identifiers are unique, that 제7조 and
 # 제7조의2 did not collapse together, and that no document is the frameset an
 # early parser mistook for a statute; and sixteen in `test_stratification.py`
 # that check the overlap tool measures real text, and twelve in
 # `test_published_kr_law_numbers.py` that re-run both experiments and compare
-# every number in `KR_LAW_RESULTS.md` against the run. Those are the tests that
+# every number in `KR_LAW_RESULTS.md` against the run, and twelve in
+# `test_published_corpus_size.py` that compare the sizes six documents publish
+# (14 statutes, 745 retrievable articles, 40 queries) against the corpus itself.
+# That last file was added because nothing measured those three numbers at all -
+# they appeared in six documents and in none of the checks. Those are the tests that
 # say the corpus is what the manifest claims **and** that the published table is
 # what the code produces - two different claims that need to hold together.
 #
