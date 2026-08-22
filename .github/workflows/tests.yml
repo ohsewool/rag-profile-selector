@@ -112,3 +112,19 @@ jobs:
             echo "::error::README 산문은 ${claimed_prose}개라고 하는데 합계는 ${total}개다."
             exit 1
           fi
+
+      - name: Refuse a line this suite never executes
+        # A coverage sweep on 2026-08-22 found 9 statements no test ever ran.
+        # Nearly all of them were degenerate-input early returns - an empty
+        # result set, a top score of zero, nothing to compare - which is to say
+        # the features had never been computed for a query that found nothing.
+        #
+        # Measured without the corpus too, which is how this job runs: still
+        # 100%. So the gate belongs here rather than in the weekly corpus job.
+        #
+        # 100% is a gate, not a target. A new branch either gets a test or gets
+        # `# pragma: no cover` with a reason beside it.
+        run: |
+          pip install -q coverage
+          python -m coverage run --source=rag_profile_selector -m pytest -q > /dev/null
+          python -m coverage report -m --fail-under=100

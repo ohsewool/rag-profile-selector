@@ -184,3 +184,88 @@ class TestTheAuditIsRecorded:
         readme = (ROOT / "README.md").read_text(encoding="utf-8")
         assert "31개를 하나씩" in readme
         assert "안 잡힘 6" in readme
+
+
+class TestLinesNoTestEverRan:
+    """거부 감사 뒤에 질문을 넓혔다 — **한 번도 실행되지 않는 줄이 무엇인가.**
+    574줄 중 9줄이었다. 대부분이 **퇴화 입력의 이른 반환**이다: 점수가 0이거나,
+    목록이 비었거나, 비교할 쌍이 하나도 없는 경우. 그런 갈래가 안 돌았다는 것은
+    **빈 검색 결과로 특징을 계산해본 적이 없다**는 뜻이고, 실험은 늘 결과가 있는
+    질의로만 돌았다는 뜻이다."""
+
+    def test_a_summary_says_ok_when_nothing_is_wrong(self):
+        from rag_profile_selector.corpus import ValidationReport
+
+        assert ValidationReport([]).summary().startswith("OK —")
+
+    def test_identifiers_that_are_not_iterable_are_refused(self):
+        from rag_profile_selector.evidence_metrics import calculate_evidence_metrics
+
+        with pytest.raises(TypeError, match="must be an iterable of identifiers"):
+            calculate_evidence_metrics(5, ["a"])
+
+    def test_a_decay_of_zero_when_the_top_score_is_zero(self):
+        """상위 점수가 0이면 감쇠를 비율로 말할 수 없다. 0으로 나누는 대신 0을
+        돌려주는데, **그 갈래는 검색이 아무것도 못 찾았을 때만 나온다.**"""
+        from rag_profile_selector.probes import ProbeResult
+
+        assert ProbeResult("bm25", ("a", "b"), (0.0, 0.0)).score_decay() == 0.0
+        assert ProbeResult("bm25", ("a",), (1.0,)).score_decay() == 0.0
+
+    def test_a_duplicate_ratio_of_zero_for_an_empty_result(self):
+        from rag_profile_selector.probes import ProbeResult
+
+        assert ProbeResult("bm25", (), ()).duplicate_ratio() == 0.0
+
+    def test_overlap_is_zero_when_one_side_found_nothing(self):
+        """한쪽이 빈 결과면 겹침은 정의되지 않는다. 0을 주는 것과 1을 주는 것은
+        **"둘이 완전히 다르다"와 "둘이 같다"만큼 다르고**, 선택기는 그 값을 본다."""
+        from rag_profile_selector.probes import ProbeResult, overlap_at_k
+
+        empty = ProbeResult("bm25", (), ())
+        full = ProbeResult("dense", ("a", "b"), (1.0, 0.5))
+        assert overlap_at_k(empty, full, k=2) == 0.0
+        assert overlap_at_k(full, empty, k=2) == 0.0
+
+    def test_rank_agreement_is_a_half_when_there_is_nothing_to_compare(self):
+        """비교할 쌍이 하나도 없으면 일치도 불일치도 아니다. 0.5는 "모른다"이고,
+        0이나 1로 접으면 **모르는 것이 아는 것처럼 특징에 실린다.**"""
+        from rag_profile_selector.probes import ProbeResult, rank_agreement
+
+        one = ProbeResult("bm25", ("a",), (1.0,))
+        other = ProbeResult("dense", ("b",), (1.0,))
+        assert rank_agreement(one, other) == 0.5
+
+    def test_the_base_selector_refuses_to_pretend(self):
+        """`Selector.choose`는 규칙이 채워야 하는 자리다. 기본 구현이 조용히
+        무언가를 고르면 **아무 규칙도 없는 선택기가 결과를 낸다.**"""
+        from rag_profile_selector.selector import Selector
+
+        with pytest.raises(NotImplementedError):
+            Selector().choose("q1", {})
+
+    def test_rank_agreement_is_a_half_when_every_pair_ties(self):
+        """공유 항목이 둘인데 **같은 식별자가 두 번**이면 비교할 순서쌍이 없다.
+        중복은 이 저장소가 실제로 측정하는 것이다(`duplicate_ratio`) — 즉 중복이
+        섞인 결과로 특징을 뽑는 것은 상상한 상황이 아니다."""
+        from rag_profile_selector.probes import ProbeResult, rank_agreement
+
+        duplicated = ProbeResult("bm25", ("a", "a"), (1.0, 0.9))
+        single = ProbeResult("dense", ("a",), (1.0,))
+        assert rank_agreement(duplicated, single) == 0.5
+
+    def test_a_coarse_gold_entry_counts_as_region_correct(self):
+        """조문 단위 정답에는 구역이 없다(`None`). 페이지가 맞으면 맞은 것이고,
+        구역까지 요구하면 **정답이 구역을 말하지 않는 질의를 전부 오답으로 센다** —
+        이 코퍼스의 정답이 정확히 그 모양이다."""
+        pytest.importorskip("document_intelligence")
+        from rag_profile_selector.grounding import (
+            GroundedCitation, GroundingResult, measure_citation_accuracy)
+
+        citation = GroundedCitation(identifier="c1", document_id="d1", page_number=3,
+                                    region_identifier=None, bounding_box=None,
+                                    rank=1, score=1.0)
+        accuracy = measure_citation_accuracy(GroundingResult((citation,), ()),
+                                             {"c1": (3, None)})
+        assert accuracy.page_correct == 1
+        assert accuracy.region_correct == 1
