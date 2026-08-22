@@ -94,3 +94,21 @@ jobs:
             echo "If the corpus is present here, the comparison means nothing."
             exit 1
           fi
+
+          # README는 같은 사실을 **두 곳**에서 말한다: `# N tests` 주석과 "코퍼스를
+          # 받으면 N개가 전부 돈다"는 산문. 위 잡은 앞의 것만 대조했고, 산문 쪽은
+          # 아무도 보지 않아 갱신에서 빠졌다(2026-08-22, 298에 멈춰 있었다).
+          # **한 사실을 두 곳에 적으면 둘 다 검사해야 한다.**
+          claimed_prose=$(grep -oE '돌리면 [0-9]+개가 전부 돈다' README.md \
+            | grep -oE '[0-9]+')
+          if [ -z "${claimed_prose}" ]; then
+            echo "::error::README에서 산문 쪽 전체 수를 읽지 못했다. 문장이 바뀌었으면"
+            echo "이 비교는 아무것도 확인하지 않는다 - 빈 값으로 통과시키지 않는다."
+            exit 1
+          fi
+          total=$((${passed:-0} + ${skipped:-0}))
+          echo "산문: ${claimed_prose}, 측정 합계: ${total}"
+          if [ "${claimed_prose}" != "${total}" ]; then
+            echo "::error::README 산문은 ${claimed_prose}개라고 하는데 합계는 ${total}개다."
+            exit 1
+          fi
