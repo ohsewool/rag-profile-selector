@@ -26,7 +26,7 @@ Do not describe this project as the first general RAG Auto-Tuner or as a complet
 - `AUTO_READY` is limited to repository inspection, environment bootstrap planning, data-protocol planning, profile-specification planning, evaluation-runner planning, and test planning.
 
 > **착수 단계 게이트는 소진됐다 (2026-08-21).** 위의 "AUTO_READY is limited to ... planning"는 착수 시점의 제약이고,
-> 그때는 맞았다. 지금 이 저장소에는 한국어 법령 745조문 위의 실험과 프로파일 5종 비교, 봉인 split 개봉까지 끝났고 테스트 318개가 돈다. 그 문장을 그대로 두면 **다음 작업이 이미
+> 그때는 맞았다. 지금 이 저장소에는 한국어 법령 745조문 위의 실험과 프로파일 5종 비교, 봉인 split 개봉까지 끝났고 테스트 337개가 돈다. 그 문장을 그대로 두면 **다음 작업이 이미
 > 끝난 단계로 되돌아간다** — 형제 저장소 `rag-profile-selector`의 `AGENTS.md`가 몇 달간
 > 쓰지 않는 코퍼스를 지시하고 있던 것과 같은 종류의 사고다.
 >

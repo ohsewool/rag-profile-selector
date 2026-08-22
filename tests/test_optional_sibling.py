@@ -99,4 +99,10 @@ def test_only_the_grounding_tests_depend_on_it():
         if "document_intelligence" in path.read_text(encoding="utf-8")
         and path.name != Path(__file__).name
     }
-    assert dependent == {"test_grounding.py", "test_citation_experiment.py"}
+    # `test_rejections_that_were_never_fired.py`는 다른 이유로 이 이름을 든다:
+    # **형제가 없을 때 나는 ImportError**를 하위 프로세스에서 확인한다. 형제를 쓰는
+    # 것이 아니라 없을 때의 안내를 확인하는 것이므로 형제가 있든 없든 돈다. 목록에
+    # 넣는 이유는 이 검사가 "이름을 드는 파일"을 세기 때문이고, 그 방식이 맞다 —
+    # 2026-08-22에 이 가드가 그 파일을 정확히 잡아냈다.
+    assert dependent == {"test_grounding.py", "test_citation_experiment.py",
+                         "test_rejections_that_were_never_fired.py"}

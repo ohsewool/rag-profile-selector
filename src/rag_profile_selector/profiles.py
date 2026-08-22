@@ -118,10 +118,28 @@ def resolve_profile(profile_id: str) -> RetrievalProfile:
 
 
 def validate_profile(profile: RetrievalProfile) -> RetrievalProfile:
-    """Return the canonical catalog value only when *profile* is unaltered."""
+    """Return the canonical catalog value for whatever *profile*'s fields name.
+
+    This used to say "only when *profile* is unaltered", and that was more than
+    the code can do. `profile_id` is derived from `method` and `k`, so altering
+    either alters the id in step: a profile tampered from dense to bm25 resolves
+    to `bm25-k4` and matches it exactly. The mismatch branch below cannot become
+    true while identity is derived from the fields it is meant to police.
+
+    Measured on 2026-08-22 by deleting each rejection in turn and running the
+    suite - this one and the `isinstance` one above were among six that no test
+    noticed. Writing the test is what showed the branch to be unreachable.
+
+    What does hold: an unapproved combination cannot get through. `k=8` on a
+    dense profile makes the id `dense-k8`, and `resolve_profile` refuses it. The
+    guarantee is "this names an approved profile", not "this object is the one
+    the catalog issued".
+    """
     if not isinstance(profile, RetrievalProfile):
         raise ProfileValidationError("profile must be a RetrievalProfile")
     canonical = resolve_profile(profile.profile_id)
-    if profile != canonical:
+    if profile != canonical:  # pragma: no cover - unreachable while the id is derived
+        # Kept for the day `profile_id` becomes a stored field, at which point a
+        # record can name one profile and carry another's numbers.
         raise ProfileValidationError("profile fields do not match its approved profile_id")
     return canonical

@@ -6,9 +6,9 @@
 
 ```bash
 pip install -e .                                   # src/ 레이아웃이라 설치 없이는 import되지 않는다
-python3 -m pytest tests/ -q                        # 269 통과 · 49 skip (코퍼스 없이)
+python3 -m pytest tests/ -q                        # 288 통과 · 49 skip (코퍼스 없이)
 python3 scripts/fetch_kr_law_corpus.py             # 한국어 법령 코퍼스 (공공누리 제1유형)
-python3 -m pytest tests/ -q                        # 318 tests (코퍼스 받은 뒤 전부 통과)
+python3 -m pytest tests/ -q                        # 337 tests (코퍼스 받은 뒤 전부 통과)
 python3 experiments/kr_law_retrieval.py            # 프로파일 비교 + headroom
 python3 experiments/kr_law_selection.py            # 선택기가 그 headroom에 닿는가
 ```
@@ -16,7 +16,7 @@ python3 experiments/kr_law_selection.py            # 선택기가 그 headroom�
 **코퍼스 본문은 재배포하지 않는다.** 갓 클론한 저장소에는 매니페스트만 있고 문서가
 없어서 **49개가 skip된다** — 받아온 법령이 조문 단위로 쪼개졌는지, 식별자가 유일한지,
 제7조와 제7조의2가 뭉개지지 않았는지, 층화 도구가 실제 중복을 재는지, 그리고
-**공개된 MRR·regret 표가 지금 코드에서도 그대로 나오는지** 확인하는 것들이다. 위 `fetch_kr_law_corpus.py`를 돌리면 318개가 전부 돈다. 이 두 숫자는 CI가
+**공개된 MRR·regret 표가 지금 코드에서도 그대로 나오는지** 확인하는 것들이다. 위 `fetch_kr_law_corpus.py`를 돌리면 337개가 전부 돈다. 이 두 숫자는 CI가
 재서 이 README와 대조한다(`tests` 워크플로).
 
 ## 결론부터 — 이 코퍼스에서 선택기는 만들 근거가 없다
@@ -113,6 +113,16 @@ python3 experiments/kr_law_selection.py            # 선택기가 그 headroom�
 ## 라이선스
 
 Apache License 2.0. [`LICENSE`](LICENSE) 참조.
+
+### 거부 여섯 개가 한 번도 발동한 적이 없었다
+
+문자열 메시지를 가진 `raise` **31개를 하나씩 `pass`로 바꾸고** 매번 스위트를 돌렸다. 잡힘 25, **안 잡힘 6**.
+
+여섯 중 둘이 이 저장소의 주장 한복판에 있었다. `validate_profile`은 "승인 목록 밖의 설정으로는 실험하지 않는다"를 지키는 문지기인데, **그 함수의 거부 둘 다 한 번도 발동한 적이 없었다.**
+
+**테스트를 쓰려다 하나가 도달 불가라는 것을 알았다.** "필드가 승인된 `profile_id`와 다르다"는 거부는 **절대 참이 될 수 없다** — `profile_id`가 `method`와 `k`에서 파생되므로 dense를 bm25로 바꾸면 id도 함께 바뀌어 정본과 정확히 일치한다. 독스트링은 *"only when profile is unaltered"*라고 적혀 있었고 **그것이 코드가 할 수 있는 것보다 큰 약속이었다.** 실제 보장은 "이것은 승인된 조합을 가리킨다"이지 "이 객체가 카탈로그가 발행한 그것이다"가 아니다. 문장을 사실로 고치고, 분기는 `profile_id`가 저장 필드가 되는 날을 위해 이유와 함께 남겼다.
+
+**"안 잡힘"이 곧 "테스트가 없다"는 아니다.** 여섯 중 하나는 일어날 수 없는 것이었고, 그 구분은 재보기 전에는 알 수 없었다. 나머지 다섯은 실제로 빈 곳이었다 — 코퍼스 매니페스트의 체크섬, 융합 입력 타입, 빈 후보 식별자, 프로파일 아닌 것, 그리고 형제 저장소가 없을 때의 안내(하위 프로세스에서 확인한다).
 
 ## 함께 보기
 
