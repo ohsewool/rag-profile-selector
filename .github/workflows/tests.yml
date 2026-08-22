@@ -124,7 +124,13 @@ jobs:
         #
         # 100% is a gate, not a target. A new branch either gets a test or gets
         # `# pragma: no cover` with a reason beside it.
+        #
+        # `--branch`, added a day later: a statement gate says every line ran,
+        # not that every `if` went both ways. One arc was left, and the side
+        # never taken was the *healthy* one - every test that passed splits to
+        # `validate_evidence_mapping` had deliberately broken them, so "a sound
+        # corpus produces no problems" had never been checked.
         run: |
           pip install -q coverage
-          python -m coverage run --source=rag_profile_selector -m pytest -q > /dev/null
+          python -m coverage run --branch --source=rag_profile_selector -m pytest -q > /dev/null
           python -m coverage report -m --fail-under=100

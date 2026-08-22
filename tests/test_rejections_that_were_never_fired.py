@@ -269,3 +269,33 @@ class TestLinesNoTestEverRan:
                                              {"c1": (3, None)})
         assert accuracy.page_correct == 1
         assert accuracy.region_correct == 1
+
+
+class TestTheBranchNoTestEverTook:
+    """구문 커버리지 100%를 세운 다음 날 **분기**로 다시 쟀다. 하나가 남아 있었고,
+    남은 쪽이 **정상 경로**였다.
+
+    `validate_evidence_mapping`에 splits를 넘긴 검사는 전부 **일부러 어긋난 배정**을
+    넣은 것이었다. 배정이 전부 아는 질의를 가리키는 경우 — 즉 코퍼스가 멀쩡할 때 —
+    이 함수가 빈손을 돌려주는지는 한 번도 확인된 적이 없다. **거부만 시험하면 전부
+    거부하는 구현도 통과한다**를 이 저장소는 여러 번 적어뒀고, 여기서는 그 문장이
+    분기 하나로 드러났다.
+    """
+
+    def test_a_healthy_split_assignment_produces_no_problems(self):
+        from rag_profile_selector.corpus import SplitAssignment, validate_evidence_mapping
+
+        queries = {"q1": ["a1"], "q2": ["a2"]}
+        splits = SplitAssignment(seed=1, assignments={"q1": "train", "q2": "test"})
+        report = validate_evidence_mapping(queries, ["a1", "a2"], splits)
+        assert report.ok
+        assert report.summary().startswith("OK —")
+
+    def test_a_stray_assignment_is_still_reported(self):
+        """정상 경로를 넣으면서 이상 경로를 잃으면 안 된다."""
+        from rag_profile_selector.corpus import SplitAssignment, validate_evidence_mapping
+
+        splits = SplitAssignment(seed=1, assignments={"q1": "train", "ghost": "test"})
+        report = validate_evidence_mapping({"q1": ["a1"]}, ["a1"], splits)
+        assert not report.ok
+        assert any("unknown queries" in problem for problem in report.problems)

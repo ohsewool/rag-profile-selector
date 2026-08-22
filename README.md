@@ -6,9 +6,9 @@
 
 ```bash
 pip install -e .                                   # src/ 레이아웃이라 설치 없이는 import되지 않는다
-python3 -m pytest tests/ -q                        # 297 통과 · 49 skip (코퍼스 없이)
+python3 -m pytest tests/ -q                        # 299 통과 · 49 skip (코퍼스 없이)
 python3 scripts/fetch_kr_law_corpus.py             # 한국어 법령 코퍼스 (공공누리 제1유형)
-python3 -m pytest tests/ -q                        # 346 tests (코퍼스 받은 뒤 전부 통과)
+python3 -m pytest tests/ -q                        # 348 tests (코퍼스 받은 뒤 전부 통과)
 python3 experiments/kr_law_retrieval.py            # 프로파일 비교 + headroom
 python3 experiments/kr_law_selection.py            # 선택기가 그 headroom에 닿는가
 ```
@@ -16,7 +16,7 @@ python3 experiments/kr_law_selection.py            # 선택기가 그 headroom�
 **코퍼스 본문은 재배포하지 않는다.** 갓 클론한 저장소에는 매니페스트만 있고 문서가
 없어서 **49개가 skip된다** — 받아온 법령이 조문 단위로 쪼개졌는지, 식별자가 유일한지,
 제7조와 제7조의2가 뭉개지지 않았는지, 층화 도구가 실제 중복을 재는지, 그리고
-**공개된 MRR·regret 표가 지금 코드에서도 그대로 나오는지** 확인하는 것들이다. 위 `fetch_kr_law_corpus.py`를 돌리면 346개가 전부 돈다. 이 두 숫자는 CI가
+**공개된 MRR·regret 표가 지금 코드에서도 그대로 나오는지** 확인하는 것들이다. 위 `fetch_kr_law_corpus.py`를 돌리면 348개가 전부 돈다. 이 두 숫자는 CI가
 재서 이 README와 대조한다(`tests` 워크플로).
 
 ## 결론부터 — 이 코퍼스에서 선택기는 만들 근거가 없다
@@ -134,7 +134,9 @@ Apache License 2.0. [`LICENSE`](LICENSE) 참조.
 
 그리고 조문 단위 정답(구역이 `None`)을 맞은 것으로 세는 갈래. 그것이 이 코퍼스 정답의 모양인데 검사가 없었다.
 
-지금은 100%이고 **코퍼스 없이도 100%**라 CI가 관문으로 지킨다.
+지금은 **분기 커버리지** 100%이고 **코퍼스 없이도 100%**라 CI가 관문으로 지킨다.
+
+구문 100%를 세운 다음 날 분기로 다시 재니 하나가 남아 있었고, **남은 쪽이 정상 경로였다.** `validate_evidence_mapping`에 splits를 넘긴 검사는 전부 일부러 어긋난 배정을 넣은 것이었다 — 배정이 전부 아는 질의를 가리킬 때, 즉 **코퍼스가 멀쩡할 때 이 함수가 빈손을 돌려주는지**는 확인된 적이 없었다. "거부만 시험하면 전부 거부하는 구현도 통과한다"가 분기 하나로 드러난 자리다.
 
 ## 함께 보기
 
