@@ -134,3 +134,22 @@ jobs:
           pip install -q coverage
           python -m coverage run --branch --source=rag_profile_selector -m pytest -q > /dev/null
           python -m coverage report -m --fail-under=100
+
+      - name: Record what the experiment and script code actually covers
+        # The gate above says 100% and means **100% of `rag_profile_selector`**.
+        # Outside it sit `experiments/` and `scripts/` - about 1,100 statements,
+        # and they are the code that produced the numbers this repository
+        # publishes. Measured 2026-08-23: 69% overall, with
+        # `kr_law_selection.py` at 21% and `fetch_kr_law_corpus.py` at 0%.
+        #
+        # They are not gated, on purpose. `fetch_kr_law_corpus.py` downloads a
+        # corpus; gating it at 100% would mean fetching on every push. The rest
+        # are one-shot research scripts whose value is the recorded output, not
+        # reusability.
+        #
+        # Not gating is a decision. Not knowing is not. This prints the figure
+        # and does not fail the build.
+        continue-on-error: true
+        run: |
+          python -m coverage run --branch --source=experiments,scripts -m pytest -q > /dev/null
+          python -m coverage report -m
