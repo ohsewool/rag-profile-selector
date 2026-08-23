@@ -48,8 +48,24 @@ def pytest_runtest_logreport(report):
 
 
 def pytest_sessionfinish(session, exitstatus):
+    """**돌린 것이 있을 때만 판정한다.**
+
+    처음엔 이 두 줄이 없었고 CI가 잡았다. 이 저장소에는 `pytest --collect-only`로
+    "스위트가 조용히 줄지 않았는가"를 보는 단계가 있는데, 거기서는 **아무것도 안
+    돈다** — 건너뛴 것도 0이다. 훅은 그것을 "기대 집합과 다르다"로 읽고 세션을
+    죽였고, 그래서 `N tests collected` 줄이 아예 안 찍혔다.
+
+    세션 훅은 **내가 생각하지 않은 모드에서도 돈다.** collect-only, `-k` 선택,
+    파일 하나. 판정할 근거가 없는 실행에서 걸리면 그건 검사가 아니라 방해다.
+    """
+    if getattr(session.config.option, "collectonly", False):
+        return                      # 아무것도 안 돌았다
     if getattr(session.config.option, "file_or_dir", None):
         return                      # 일부만 돌렸다 — 집합을 비교할 수 없다
+    if getattr(session.config.option, "keyword", None):
+        return                      # `-k`로 골랐다
+    if not getattr(session, "testscollected", 0):
+        return
     if session.testsfailed:
         return                      # 이미 빨간불이다. 이유를 하나 더 얹지 않는다
 
