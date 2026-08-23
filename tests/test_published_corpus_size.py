@@ -25,14 +25,13 @@ from pathlib import Path
 
 import pytest
 
+from corpus_absence import SKIP_WITHOUT_CORPUS
+
 ROOT = Path(__file__).resolve().parents[1]
 CORPUS = ROOT / "data" / "kr_law"
 DOCUMENTS = CORPUS / "documents"
 
-pytestmark = pytest.mark.skipif(
-    not (DOCUMENTS.exists() and any(DOCUMENTS.glob("*.json"))),
-    reason="코퍼스 본문은 gitignore돼 있다 — 받아야 돈다",
-)
+pytestmark = SKIP_WITHOUT_CORPUS
 
 # 같은 사실을 말하는 문서들. 한 곳만 고치고 나머지가 남는 것이 이 저장소가
 # 이미 겪은 일이다 — README의 산문 숫자가 두 회차 동안 옛 값에 멈춰 있었다.

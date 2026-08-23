@@ -16,6 +16,8 @@ from pathlib import Path
 
 import pytest
 
+from corpus_absence import skip_without_corpus
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "src"))
 
@@ -35,7 +37,7 @@ def manifest():
 @pytest.fixture(scope="module")
 def documents_present():
     if not (CORPUS / "documents").exists():
-        pytest.skip("documents are gitignored; fetch them to run this")
+        skip_without_corpus()
     return True
 
 

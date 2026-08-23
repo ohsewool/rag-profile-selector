@@ -34,14 +34,13 @@ from pathlib import Path
 
 import pytest
 
+from corpus_absence import SKIP_WITHOUT_CORPUS
+
 ROOT = Path(__file__).resolve().parents[1]
 RESULTS = ROOT / "experiments" / "KR_LAW_RESULTS.md"
 DOCUMENTS = ROOT / "data" / "kr_law" / "documents"
 
-pytestmark = pytest.mark.skipif(
-    not (DOCUMENTS.exists() and any(DOCUMENTS.glob("*.json"))),
-    reason="코퍼스 본문은 gitignore돼 있다 — 받아야 돈다",
-)
+pytestmark = SKIP_WITHOUT_CORPUS
 
 
 def run(script: str) -> str:

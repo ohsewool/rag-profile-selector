@@ -22,6 +22,8 @@ from pathlib import Path
 
 import pytest
 
+from corpus_absence import SKIP_WITHOUT_CORPUS
+
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "scripts"))
 sys.path.insert(0, str(ROOT / "src"))
@@ -36,9 +38,11 @@ from check_query_set import load_articles  # noqa: E402
 # 본문이 없으면 `main()`이 "질의가 없다"로 1을 내는데, 테스트는 그것을 "봉인을
 # 거부했다"로 읽었다. 같은 종료 코드가 두 가지를 뜻하면 단언은 아무것도 고정하지
 # 않는다. 코퍼스를 받아 도는 주간 워크플로가 이 파일을 실제로 실행한다.
-pytestmark = pytest.mark.skipif(
-    not (CORPUS / "documents").exists(),
-    reason="코퍼스 본문은 gitignore돼 있다 — 받아야 돈다")
+# **조건이 셋과 달랐다.** 여기는 디렉터리 존재만 봤고 나머지 셋은 그 안에 조문
+# JSON이 있는지까지 봤다. `fetch`가 중간에 죽어 빈 디렉터리가 남으면 이 파일만
+# **빈 코퍼스를 상대로 돌고**, 위 주석이 적어둔 "잘못된 이유로 통과했다"가 그대로
+# 재현된다. 조건과 문장을 `tests/corpus_absence.py` 한 곳으로 모았다 (2026-08-23).
+pytestmark = SKIP_WITHOUT_CORPUS
 
 
 @pytest.fixture(scope="module")
