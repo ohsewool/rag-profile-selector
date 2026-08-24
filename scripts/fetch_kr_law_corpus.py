@@ -17,7 +17,7 @@ redistributing avoids the question entirely.
 The API is unauthenticated for the trial identifier `OC=test`, which is
 sufficient here; pass --oc to use your own.
 
-    python3 scripts/fetch_kr_law_corpus.py --out data/kr_law --limit 30
+    python3 scripts/fetch_kr_law_corpus.py --out data/kr_law            # 기본값이 커밋된 코퍼스(14건)를 재현한다
 
 Re-running is safe: files are rewritten and the manifest recomputed, so a
 changed statute shows up as a checksum change rather than silently sliding into
@@ -160,7 +160,13 @@ def main() -> int:
     global OC
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--out", default="data/kr_law")
-    parser.add_argument("--limit", type=int, default=30, help="statutes in total")
+    # **기본값이 커밋된 코퍼스를 재현해야 한다.** 예전 기본은 30이었는데 커밋된
+    # 코퍼스(manifest.json)와 corpus.yml의 주간 검증은 둘 다 14다 — 한 질문에
+    # 규칙이 둘이었고, README는 인자 없이 실행하라고 안내하므로 **README를 따르는
+    # 사람은 다른 코퍼스를 받아 "348개 전부 통과"가 거짓이 됐다.** 2026-08-24에
+    # CI가 README 방식 그대로 받았다가 공개 수치 검사 여섯이 실패하며 드러났다.
+    parser.add_argument("--limit", type=int, default=14,
+                        help="statutes in total (기본값 = 커밋된 manifest와 동일)")
     parser.add_argument("--oc", default="test", help="국가법령정보 OPEN API identifier")
     parser.add_argument("--min-chars", type=int, default=800,
                         help="skip statutes too short to retrieve over")
