@@ -39,16 +39,33 @@ jobs:
       - name: Install the sibling
         run: pip install -e .sibling/document-intelligence
 
-      - name: Refuse a silently shrinking suite
-        run: |
-          collected=$(python -m pytest --collect-only -q 2>/dev/null \
-            | grep -oE '[0-9]+ tests? collected' | grep -oE '^[0-9]+')
-          echo "collected $collected, expecting at least 177"
-          if [ "${collected:-0}" -lt 177 ]; then
-            echo "::error::only $collected tests collected; expected at least 177."
-            echo "Something is being skipped that should be running."
-            exit 1
-          fi
+      - name: The floor this replaced could not see what it was named for
+        # 여기 있던 것은 `Refuse a silently shrinking suite`였고 두 가지가 틀렸다.
+        #
+        # **하나.** 보는 것이 `pytest --collect-only`의 수집 수인데, 런타임 skip은
+        # 수집 수를 바꾸지 않는다. 픽스처 안에서 `pytest.skip()`이 불려도 테스트는
+        # 이미 수집된 뒤다. 이름이 말하는 바로 그것을 구조적으로 볼 수 없었다.
+        # 2026-08-24에 `document-intelligence`에서 재봤다 — 샘플 PDF를 못 받자
+        # **32개가 조용히 skip**됐는데 수집 수는 234 그대로였고 관문은 통과시켰다.
+        #
+        # **둘.** 하한이 실제보다 한참 낮았다. 네 저장소를 세어보니 이랬다.
+        #
+        #     agent-safety-core   하한 288 · 실제  565  → 277개가 사라져도 통과
+        #     mcp-gateway         하한 146 · 실제  379  → 233개
+        #     rag-profile-selector 하한 177 · 실제  348  → 171개
+        #     modelmate           하한 281 · 실제 1156  → 875개
+        #
+        # 합쳐 **1,556개가 사라져도 네 관문 전부 초록불**이다. 하한선은 목록이
+        # 줄어드는 것만 보고, 목록이 현실에서 멀어지는 것은 못 본다.
+        #
+        # 지우고 끝내는 것이 아니라 **두 일을 이미 하는 것들이 있다.**
+        #   수집 수  → 바로 아래 "README가 자기 수를 맞게 센다"가 **정확히** 비교한다
+        #   런타임 skip → `conftest.py`의 EXPECTED_SKIPS 훅이 집합으로 지킨다
+        #
+        # 2026-08-24에 document-intelligence만 고치고 나머지 셋을 세지 않았다.
+        # **하나를 찾으면 몇 개인지 세는 것**이 이 포트폴리오의 규칙인데 그때
+        # 어겼고, 한 회차 뒤에 같은 것이 세 곳에 더 있는 것을 발견했다.
+        run: echo "수집 수는 아래 단계가, 건너뛰기는 conftest의 EXPECTED_SKIPS가 지킨다"
 
       - name: Refuse a README that miscounts its own tests
         run: |
