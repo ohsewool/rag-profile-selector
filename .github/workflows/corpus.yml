@@ -135,7 +135,15 @@ jobs:
           # drifts. Two test counts in this project did, one of them in a README
           # I had verified days earlier.
           pip install torch transformers --quiet
-          python experiments/kr_law_retrieval.py > /tmp/run.txt 2>&1 || true
+          # `|| true`로 종료 코드를 삼키면 **실험이 죽어도 이 단계가 계속 간다.**
+          # 아래 확인은 그때 "숫자를 못 찾았다"는 경고 셋을 내고 초록불로 끝난다 —
+          # 바로 다음 단계가 "검사가 아무것도 확인 못 했으면 실패"라는 원칙을 이미
+          # 쓰고 있는데 여기만 안 쓰고 있었다.
+          if ! python experiments/kr_law_retrieval.py > /tmp/run.txt 2>&1; then
+            echo "::error::실험이 실패했다. 아래 수치 확인은 아무것도 확인할 수 없다."
+            tail -40 /tmp/run.txt
+            exit 1
+          fi
           tail -40 /tmp/run.txt
 
           python - <<'CHECK'
@@ -158,19 +166,33 @@ jobs:
               "hybrid-all MRR": (r"hybrid-all\s+([0-9.]+)", "0.562"),
               "headroom": (r"headroom\s+:\s+([0-9.]+)", "0.1071"),
           }
-          failures = []
+          drifted, missing = [], []
           for label, (pattern, expected) in claims.items():
               found = re.search(pattern, output)
               if not found:
-                  failures.append(f"{label}: not present in the run output")
+                  missing.append(f"{label}: not present in the run output")
               elif found.group(1) != expected:
-                  failures.append(f"{label}: README says {expected}, run produced {found.group(1)}")
+                  drifted.append(f"{label}: README says {expected}, run produced {found.group(1)}")
               elif expected not in readme:
-                  failures.append(f"{label}: {expected} no longer appears in the README")
+                  missing.append(f"{label}: {expected} no longer appears in the README")
 
-          for line in failures:
+          # **두 가지 실패를 갈라 놓는다.**
+          #
+          #   흘러감  — 값이 있는데 다르다. 임베딩 모델이나 라이브러리 판이 바뀌면
+          #             정당하게 움직인다. 경고로 남기고 사람이 판단한다.
+          #   못 찾음 — 출력에 그 값이 아예 없다. 드리프트가 아니라 **이 확인이
+          #             아무것도 확인하지 못했다**는 뜻이다.
+          #
+          # 처음엔 둘 다 경고였다. 2026-08-24에 실험 출력 대신 트레이스백을 넣어
+          # 돌려보니 경고 셋에 종료 코드 0이었다 — 실험이 통째로 죽어도 초록불이다.
+          for line in drifted:
               print(f"::warning::{line}")
-          print("모든 수치 일치" if not failures else f"{len(failures)}건 불일치")
+          for line in missing:
+              print(f"::error::{line}")
+          if missing:
+              print(f"{len(missing)}건은 값을 찾지도 못했다 — 이 단계는 아무것도 확인하지 않았다.")
+              sys.exit(1)
+          print("모든 수치 일치" if not drifted else f"{len(drifted)}건 흘러감(경고)")
           # A warning rather than a failure: an embedding model or library
           # version can move these legitimately, and a red build every time a
           # dependency updates is a build people stop reading. The drift is
