@@ -47,6 +47,30 @@ def pytest_runtest_logreport(report):
         _skipped.append((report.nodeid.split("::")[0], reason))
 
 
+
+def _collected_every_test_file(session) -> bool:
+    """이번 실행이 **디스크의 테스트 파일을 전부** 모았는가.
+
+    부르는 방법은 여럿이다(`pytest`, `pytest tests/`, `pytest tests/ -q`). 셋 다
+    같은 것을 돌린다. 반면 `pytest tests/test_one.py`는 아니다. 인자의 모양이
+    아니라 **모인 결과**로 가른다.
+    """
+    from pathlib import Path as _Path
+
+    root = _Path(str(session.config.rootpath)) / "tests"
+    if not root.is_dir():
+        return False
+    on_disk = {p.resolve() for p in root.rglob("test_*.py")}
+    if not on_disk:
+        return False
+    collected = set()
+    for item in getattr(session, "items", []):
+        try:
+            collected.add(_Path(str(item.fspath)).resolve())
+        except Exception:
+            pass
+    return on_disk <= collected
+
 def pytest_sessionfinish(session, exitstatus):
     """**돌린 것이 있을 때만 판정한다.**
 
@@ -60,8 +84,18 @@ def pytest_sessionfinish(session, exitstatus):
     """
     if getattr(session.config.option, "collectonly", False):
         return                      # 아무것도 안 돌았다
-    if getattr(session.config.option, "file_or_dir", None):
-        return                      # 일부만 돌렸다 — 집합을 비교할 수 없다
+    if not _collected_every_test_file(session):
+        # **"경로를 줬다"와 "일부만 돌렸다"는 다르다.**
+        #
+        # 예전에는 `file_or_dir`가 있으면 무조건 건너뛰었다. 그래서 README가
+        # 시키는 `pytest tests/ -q`에서 이 훅이 통째로 침묵했다 — CI는 인자 없이
+        # `pytest -q`를 쓰므로 거기서만 살아 있었고, **README를 따르는 사람에게는
+        # 없는 것과 같았다.** 2026-08-24에 새 clone에서 재보다 걸렸다:
+        # 33개가 건너뛰어졌는데 종료 코드가 0이었다.
+        #
+        # 이제 "무엇을 줬는가"가 아니라 **"전부 모였는가"**를 본다. 디스크의
+        # `test_*.py`가 전부 수집됐으면 어떻게 불렀든 판정할 근거가 있다.
+        return
     if getattr(session.config.option, "keyword", None):
         return                      # `-k`로 골랐다
     if not getattr(session, "testscollected", 0):
